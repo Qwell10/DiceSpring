@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice</title>
+    <style>
+        body {
+            background-color: #2e7d32;
+            background-image: radial-gradient(circle, #388e3c, #1b5e20);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 40px;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            min-height: 80px;
+        }
+
+        .die {
+            width: 70px;
+            height: 70px;
+            background-color: white;
+            color: #222;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.1s;
+        }
+
+        @keyframes rollAnimation {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            25% {
+                transform: rotate(90deg) scale(1.1);
+                background-color: #f0f0f0;
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+
+            75% {
+                transform: rotate(270deg) scale(1.1);
+                background-color: #f8f8f8;
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        .rolling {
+            animation: rollAnimation 0.6s linear infinite;
+        }
+
+        button {
+            padding: 15px 35px;
+            font-size: 22px;
+            background-color: #ffb300;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 0 #ff8f00, 0 10px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.1s;
+        }
+
+        button:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #ff8f00, 0 4px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            background-color: #ffc107;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            box-shadow: 0 6px 0 #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="diceArea" class="dice-container"></div>
+
+    <button id="rollBtn">Hodit kostkama</button>
+
+    <script>
+        const rollBtn = document.getElementById('rollBtn');
+        const diceArea = document.getElementById('diceArea');
+
+        rollBtn.addEventListener('click', () => {
+            rollBtn.disabled = true; // hrac nemuze kliknout na tlacitko
+            diceArea.innerHTML = ''; // Vyčistíme stůl od předchozího hodu
+
+            // 1. ROVNOU VOLÁME BE 
+            fetch('/api/dice/roll', { method: 'POST' })
+                .then(response => response.json())
+                .then(cislaZJavy => {
+                    // Java nám odpověděla! cislaZJavy je teď např. [2, 5, 1, 4] (délka je 4)
+                    const diceElements = [];
+
+                    // 2. VYKRESLÍME PŘESNĚ TOLIK KOSTEK, KOLIK PŘIŠLO Z JAVY
+                    for (let i = 0; i < cislaZJavy.length; i++) {
+                        const die = document.createElement('div');
+                        die.className = 'die rolling'; // Dáme jim animaci točení
+                        die.innerText = '?';
+                        diceArea.appendChild(die);
+                        diceElements.push(die);
+                    }
+
+                    // 3. NECHÁME JE CHVÍLI TOČIT A PAK ZOBRAZÍME SKUTEČNÁ ČÍSLA
+                    setTimeout(() => {
+                        diceElements.forEach((die, index) => {
+                            die.classList.remove('rolling'); // Zastavíme točení
+                            die.innerText = cislaZJavy[index]; // Doplníme číslo z Javy
+                        });
+
+                        rollBtn.disabled = false; // Povolíme tlačítko pro další akce
+                    }, 600); // 600 milisekund točení pro hezký efekt
+                })
+                .catch(error => {
+                    console.error("Chyba spojení s Javou:", error);
+                    rollBtn.disabled = false;
+                });
+        });
+    </script>
+</body>
+
+</html>

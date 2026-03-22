@@ -44,6 +44,14 @@
             font-weight: bold;
             box-shadow: 3px 5px 15px rgba(0, 0, 0, 0.4);
             transition: transform 0.1s;
+            cursor: pointer;
+        }
+
+        .die.selected {
+            background-color: #ffeb3b;
+            border: 2px solid #f57f17;
+            transform: translateY(-10px);
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
         }
 
         @keyframes rollAnimation {
@@ -87,6 +95,13 @@
             transition: all 0.1s;
         }
 
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
         button:active {
             transform: translateY(6px);
             box-shadow: 0 0 0 #ff8f00, 0 4px 4px rgba(0, 0, 0, 0.3);
@@ -102,53 +117,154 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        #gameMessage {
+            margin: 15px auto;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            max-width: 400px;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .message-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+            display: block !important;
+        }
+
+        .message-success {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #4ade80;
+            display: block !important;
+        }
     </style>
 </head>
 
 <body>
+    <div id="gameMessage"></div>
+
     <div id="diceArea" class="dice-container"></div>
 
-    <button id="rollBtn">Hodit kostkama</button>
+    <div class="button-container">
+        <button id="rollBtn">Hodit kostkama</button>
+        <button id="scoreBtn" disabled>Vybrat kostky</button>
+    </div>
 
     <script>
-        const rollBtn = document.getElementById('rollBtn');
         const diceArea = document.getElementById('diceArea');
+        const gameMessage = document.getElementById('gameMessage');
+        const rollBtn = document.getElementById('rollBtn');
+        const scoreBtn = document.getElementById('scoreBtn');
+
+        function showMessage(text, isError) {
+            gameMessage.innerText = text;
+
+            if (isError) {
+                gameMessage.className = 'message-error';
+            } else {
+                gameMessage.className = 'message-success';
+            }
+
+            setTimeout(() => {
+                gameMessage.style.display = 'none';
+                gameMessage.className = '';
+            }, 3500);
+        }
 
         rollBtn.addEventListener('click', () => {
-            rollBtn.disabled = true; // hrac nemuze kliknout na tlacitko
-            diceArea.innerHTML = ''; // Vyčistíme stůl od předchozího hodu
+            rollBtn.disabled = true;
+            scoreBtn.disabled = true;
 
-            // 1. ROVNOU VOLÁME BE 
+            diceArea.innerHTML = '';
+
             fetch('/api/dice/roll', { method: 'POST' })
                 .then(response => response.json())
-                .then(cislaZJavy => {
-                    // Java nám odpověděla! cislaZJavy je teď např. [2, 5, 1, 4] (délka je 4)
+                .then(diceValues => {
                     const diceElements = [];
 
-                    // 2. VYKRESLÍME PŘESNĚ TOLIK KOSTEK, KOLIK PŘIŠLO Z JAVY
-                    for (let i = 0; i < cislaZJavy.length; i++) {
+                    for (let i = 0; i < diceValues.length; i++) {
                         const die = document.createElement('div');
-                        die.className = 'die rolling'; // Dáme jim animaci točení
+                        die.className = 'die rolling';
                         die.innerText = '?';
                         diceArea.appendChild(die);
                         diceElements.push(die);
                     }
 
-                    // 3. NECHÁME JE CHVÍLI TOČIT A PAK ZOBRAZÍME SKUTEČNÁ ČÍSLA
                     setTimeout(() => {
                         diceElements.forEach((die, index) => {
-                            die.classList.remove('rolling'); // Zastavíme točení
-                            die.innerText = cislaZJavy[index]; // Doplníme číslo z Javy
-                        });
+                            die.classList.remove('rolling');
+                            die.innerText = diceValues[index];
 
-                        rollBtn.disabled = false; // Povolíme tlačítko pro další akce
-                    }, 600); // 600 milisekund točení pro hezký efekt
+                            die.addEventListener('click', () => {
+                                die.classList.toggle('selected');
+
+                                const selectedCount = document.querySelectorAll('.die.selected').length;
+
+                                if (selectedCount > 0) {
+                                    scoreBtn.disabled = false;
+                                } else {
+                                    scoreBtn.disabled = true;
+                                }
+                            });
+                        });
+                        rollBtn.disabled = false;
+                    }, 600);
                 })
+
                 .catch(error => {
                     console.error("Chyba spojení s Javou:", error);
                     rollBtn.disabled = false;
                 });
         });
+
+        scoreBtn.addEventListener('click', () => {
+
+            const selectedElements = document.querySelectorAll('.die.selected');
+            const selectedDice = [];
+
+            selectedElements.forEach(die => {
+                const dieValue = parseInt(die.innerText);
+                selectedDice.push(dieValue);
+            });
+
+            console.log("Selected dice to send:", selectedDice);
+
+            scoreBtn.disabled = true; //hrac nemuze 2x za sebou rychle kliknout na tlacitko
+
+            fetch('/api/dice/score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(selectedDice)
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(data.errorMessage);
+                        }
+                        return data;
+                    });
+                })
+                .then(turnStatus => {
+                    console.log("Odpověď z Javy:", turnStatus);
+
+                    // tady bude 200 ok
+                    // pozdeji kod na smazani kostek
+                })
+                .catch(error => {
+                    console.error("Chyba: ", error);
+                    showMessage(error.message, true); //vyskoci na hrace zprava o chybe
+
+                    scoreBtn.disabled = false; // kdyz se neco pokazi, tlacitko zase odemkneme
+                });
+        });
+
     </script>
 </body>
 

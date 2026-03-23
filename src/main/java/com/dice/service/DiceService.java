@@ -34,6 +34,21 @@ public class DiceService {
         return false;
     }
 
+    public boolean isLargeStraight(List<Integer> pickedDice) {
+        int[] diceCounts = getDiceCounts(pickedDice);
+
+        int marker = 0;
+
+        for (int die : diceCounts) {
+            if (die == 1) {
+                marker++;
+            }
+        }
+
+        return marker == 6;
+    }
+
+
     private int[] getDiceCounts(List<Integer> pickedDice) {
         int[] diceCounts = new int[7];
 

@@ -20,14 +20,18 @@ public class DiceController {
 
     @PostMapping("dice/roll")
     public List<Integer> rollDice() {
-        return diceService.rollDice(6);
+        //  return diceService.rollDice(6);
+        return List.of(1, 2, 3, 4, 5, 6);
     }
 
     @PostMapping("/dice/score")
     public ResponseEntity<TurnStatusResponse> calculateScore(@RequestBody List<Integer> pickedDice) {
+        if (diceService.isLargeStraight(pickedDice)) {
+            return ResponseEntity.ok().body(new TurnStatusResponse(3000, 6, null));
+        }
         if (diceService.hasInvalidDice(pickedDice)) {
             return ResponseEntity.badRequest().body(new TurnStatusResponse(0, 0, "Neplatné kostky!"));
-        } else return ResponseEntity.ok(new TurnStatusResponse(1000, 1000, null));
+        } else return ResponseEntity.ok(new TurnStatusResponse(999, 999, null));
     }
 
 }

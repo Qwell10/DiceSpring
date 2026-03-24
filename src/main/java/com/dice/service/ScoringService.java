@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 @Service
-public class DiceService {
+public class ScoringService {
 
     public List<Integer> rollDice(int amountDice) {
         Random random = new Random();

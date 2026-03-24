@@ -1,7 +1,8 @@
 package com.dice.controller;
 
-import com.dice.dto.TurnStatusResponse;
-import com.dice.service.DiceService;
+import com.dice.dto.ErrorResponse;
+import com.dice.service.GameService;
+import com.dice.service.ScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +17,10 @@ import java.util.List;
 public class DiceController {
 
     @Autowired
-    private DiceService diceService;
+    private ScoringService scoringService;
+
+    @Autowired
+    private GameService gameService;
 
     @PostMapping("dice/roll")
     public List<Integer> rollDice() {
@@ -25,13 +29,15 @@ public class DiceController {
     }
 
     @PostMapping("/dice/score")
-    public ResponseEntity<TurnStatusResponse> calculateScore(@RequestBody List<Integer> pickedDice) {
-        if (diceService.isLargeStraight(pickedDice)) {
-            return ResponseEntity.ok().body(new TurnStatusResponse(3000, 6, null));
+    public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
+        if (scoringService.hasInvalidDice(pickedDice)) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Neplatné kostky!"));
         }
-        if (diceService.hasInvalidDice(pickedDice)) {
-            return ResponseEntity.badRequest().body(new TurnStatusResponse(0, 0, "Neplatné kostky!"));
-        } else return ResponseEntity.ok(new TurnStatusResponse(999, 999, null));
+
+       if (scoringService.isLargeStraight(pickedDice)) {
+           gameService.saveTurnScore();
+       }
+
     }
 
 }

@@ -10,6 +10,38 @@ public class GameService {
 
     private int activePlayerId = 1;
 
+    public void switchPlayer() {
+        if (activePlayerId == 1) {
+            activePlayerId = 2;
+        } else activePlayerId = 1;
+    }
+
+    public int getActivePlayerRemainingDice() {
+        if (activePlayerId == 1) {
+            return player1.getRemainingDice();
+        } else return player2.getRemainingDice();
+    }
+
+    public void setActivePlayerRemainingDice(int diceCount) {
+        if (activePlayerId == 1) {
+            player1.setRemainingDice(diceCount);
+        } else player2.setRemainingDice(diceCount);
+
+    }
+
+    public int getActivePlayerTurnScore() {
+        if (activePlayerId == 1) {
+            return player1.getTurnScore();
+        } else return player2.getTurnScore();
+    }
+
+    public void setActivePlayerTurnScore(int turnScore) {
+        if (activePlayerId == 1) {
+            player1.setTurnScore(turnScore);
+        } else player2.setTurnScore(turnScore);
+    }
+
+
     public void saveTurnScore() {
         if (activePlayerId == 1) {
             //todo()

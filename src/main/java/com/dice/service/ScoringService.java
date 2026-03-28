@@ -20,6 +20,21 @@ public class ScoringService {
         return diceNumbers;
     }
 
+    public boolean isRollScorable(List<Integer> rolledDice) {
+        if (rolledDice.contains(1) || rolledDice.contains(5)) {
+            return true;
+        }
+
+        int[] diceCounts = getDiceCounts(rolledDice);
+
+        for (int count : diceCounts) {
+            if (count >= 3) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean hasInvalidDice(List<Integer> pickedDice) {
         int[] diceCounts = getDiceCounts(pickedDice);
 

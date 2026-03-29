@@ -26,8 +26,8 @@ public class DiceController {
 
     @PostMapping("dice/roll")
     public ResponseEntity<?> rollDice() {
-        List<Integer> rolledDice = scoringService.rollDice(gameService.getActivePlayerRemainingDice());
-        //List<Integer> rolledDice = new ArrayList<>(List.of(2,3,6));
+      //  List<Integer> rolledDice = scoringService.rollDice(gameService.getActivePlayerRemainingDice());
+        List<Integer> rolledDice = new ArrayList<>(List.of(1,2,3,4,5,6));
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
@@ -44,6 +44,9 @@ public class DiceController {
 
     @PostMapping("/dice/score")
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
+        if (scoringService.isLargeStraight(pickedDice)) {
+            //todo()
+        }
         if (scoringService.hasInvalidDice(pickedDice)) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Neplatné kostky!"));
         }

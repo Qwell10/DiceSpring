@@ -111,10 +111,13 @@ rollBtn.addEventListener("click", () => {
         });
       })
       .then((turnStatus) => {
-        console.log("Odpověď z Javy:", turnStatus);
+        const isPlayer1Active = document.getElementById('player1-card').classList.contains('active');
 
-        // tady bude 200 ok
-        // pozdeji kod na smazani kostek
+        const targetSpanId = isPlayer1Active ? 'actual-score-p1' : 'actual-score-p2';
+        const scoreSpan = document.getElementById(targetSpanId);
+        
+        scoreSpan.innerText = turnStatus.turnScore;  
+        
       })
       .catch((error) => {
         console.error("Chyba: ", error);

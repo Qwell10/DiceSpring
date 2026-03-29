@@ -42,7 +42,7 @@ public class GameService {
     }
 
 
-    public void saveTurnScore() {
+    public void saveTurnScore(int turnScore) {
         if (activePlayerId == 1) {
             //todo()
         }

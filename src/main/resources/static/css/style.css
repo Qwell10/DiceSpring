@@ -48,6 +48,23 @@ h1 {
     font-weight: bold;
 }
 
+.player-actual-score {
+    font-size: 1.3rem;
+    color: #0f172a;               
+    font-weight: 800;
+    margin-top: 12px;
+    padding: 8px 12px;            
+    background-color: #f1f5f9;    
+    border-radius: 8px;           
+    border: 2px solid #cbd5e1;    
+    display: inline-block;        
+}
+
+.player-actual-score span {
+    font-size: 1.6rem;
+    color: #ea580c;
+}
+
 .player-card.active {
     border-color: #2563eb;
     background: #eff6ff;

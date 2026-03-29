@@ -3,6 +3,7 @@ package com.dice.service;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -63,6 +64,24 @@ public class ScoringService {
         return marker == 6;
     }
 
+    public boolean isSmallStraight(List<Integer> pickedDice) {
+        int[] diceCounts = getDiceCounts(pickedDice);
+
+        return (diceCounts[1] >= 1 && diceCounts[2] == 1 && diceCounts[3] == 1 && diceCounts[4] == 1 && diceCounts[5] >= 1) ||
+                (diceCounts[2] == 1 && diceCounts[3] == 1 && diceCounts[4] == 1 && diceCounts[5] >= 1 && diceCounts[6] == 1);
+    }
+
+    public boolean containsOnes(List<Integer> pickedDice) {
+        int onesCount = Collections.frequency(pickedDice, 1);
+
+        return onesCount > 1;
+    }
+
+    public boolean containsFives(List<Integer> pickedDice) {
+        int fivesCount = Collections.frequency(pickedDice, 5);
+
+        return fivesCount > 1;
+    }
 
     private int[] getDiceCounts(List<Integer> pickedDice) {
         int[] diceCounts = new int[7];

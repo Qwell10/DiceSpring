@@ -27,14 +27,12 @@ public class DiceController {
 
     @PostMapping("dice/roll")
     public ResponseEntity<?> rollDice() {
-      //  List<Integer> rolledDice = scoringService.rollDice(gameService.getActivePlayerRemainingDice());
-        List<Integer> rolledDice = new ArrayList<>(List.of(1,2,3,4,5,6));
+        //  List<Integer> rolledDice = scoringService.rollDice(gameService.getActivePlayerRemainingDice());
+        List<Integer> rolledDice = new ArrayList<>(List.of(1, 2, 3, 4, 5, 5));
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
-        }
-
-        else {
+        } else {
             gameService.setActivePlayerRemainingDice(6);
             gameService.setActivePlayerTurnScore(0);
             gameService.switchPlayer();
@@ -48,6 +46,18 @@ public class DiceController {
         if (scoringService.isLargeStraight(pickedDice)) {
             gameService.saveTurnScore(3000);
             return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+        }
+        if (scoringService.isSmallStraight(pickedDice)) {
+            if (scoringService.containsOnes(pickedDice)) {
+                gameService.saveTurnScore(1600);
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+            } else if (scoringService.containsFives(pickedDice)) {
+                gameService.saveTurnScore(1550);
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+            } else {
+                gameService.saveTurnScore(1500);
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+            }
         }
         if (scoringService.hasInvalidDice(pickedDice)) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Neplatné kostky!"));

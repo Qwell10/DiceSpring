@@ -41,11 +41,16 @@ public class GameService {
         } else player2.setTurnScore(turnScore);
     }
 
-
     public void saveTurnScore(int turnScore) {
         if (activePlayerId == 1) {
-            //todo()
-        }
+            player1.setTurnScore(player1.getTurnScore() + turnScore);
+        } else player2.setTurnScore(player2.getTurnScore() + turnScore);
+    }
+
+    public int getTurnScore() {
+        if (activePlayerId == 1) {
+            return player1.getTurnScore();
+        } else return player2.getTurnScore();
     }
 
 }

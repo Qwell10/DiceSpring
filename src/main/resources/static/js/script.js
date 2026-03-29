@@ -2,6 +2,7 @@ const diceArea = document.getElementById("diceArea");
 const gameMessage = document.getElementById("gameMessage");
 const rollBtn = document.getElementById("rollBtn");
 const scoreBtn = document.getElementById("scoreBtn");
+const endTurnBtn = document.getElementById('endTurnBtn');
 
 function switchActivePlayerUI() {
   const player1Box = document.getElementById("player1-card");
@@ -29,7 +30,7 @@ function showMessage(text, isError) {
 rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;
   scoreBtn.disabled = true;
-
+  endTurnBtn.disabled = true; 
   diceArea.innerHTML = "";
 
   fetch("/api/dice/roll", { method: "POST" })
@@ -54,9 +55,13 @@ rollBtn.addEventListener("click", () => {
           if (data.isBust === false) {
             die.addEventListener("click", () => {
               die.classList.toggle("selected");
-              const selectedCount =
-                document.querySelectorAll(".die.selected").length;
-              scoreBtn.disabled = selectedCount === 0;
+              const selectedCount = document.querySelectorAll(".die.selected").length;
+
+              if (selectedCount > 0) {
+                scoreBtn.disabled = false; 
+              } else {
+                scoreBtn.disabled = true; 
+              }
             });
           } else {
             die.classList.add("bust-die");
@@ -69,10 +74,10 @@ rollBtn.addEventListener("click", () => {
           setTimeout(() => {
             diceArea.innerHTML = "";
             switchActivePlayerUI();
-            rollBtn.disabled = false;
+            rollBtn.disabled = false; 
           }, 3000);
         } else {
-          rollBtn.disabled = false;
+           
         }
       }, 600);
     })
@@ -81,49 +86,81 @@ rollBtn.addEventListener("click", () => {
       showMessage(error.message, true);
       rollBtn.disabled = false;
     });
+});
 
-  scoreBtn.addEventListener("click", () => {
-    const selectedElements = document.querySelectorAll(".die.selected");
-    const selectedDice = [];
 
-    selectedElements.forEach((die) => {
-      const dieValue = parseInt(die.innerText);
-      selectedDice.push(dieValue);
-    });
 
-    console.log("Selected dice to send:", selectedDice);
+scoreBtn.addEventListener("click", () => {
+  const selectedElements = document.querySelectorAll(".die.selected");
+  const selectedDice = [];
 
-    scoreBtn.disabled = true; //hrac nemuze 2x za sebou rychle kliknout na tlacitko
-
-    fetch("/api/dice/score", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(selectedDice),
-    })
-      .then((response) => {
-        return response.json().then((data) => {
-          if (!response.ok) {
-            throw new Error(data.errorMessage);
-          }
-          return data;
-        });
-      })
-      .then((turnStatus) => {
-        const isPlayer1Active = document.getElementById('player1-card').classList.contains('active');
-
-        const targetSpanId = isPlayer1Active ? 'actual-score-p1' : 'actual-score-p2';
-        const scoreSpan = document.getElementById(targetSpanId);
-        
-        scoreSpan.innerText = turnStatus.turnScore;  
-        
-      })
-      .catch((error) => {
-        console.error("Chyba: ", error);
-        showMessage(error.message, true); //vyskoci na hrace zprava o chybe
-
-        scoreBtn.disabled = false; // kdyz se neco pokazi, tlacitko zase odemkneme
-      });
+  selectedElements.forEach((die) => {
+    selectedDice.push(parseInt(die.innerText));
   });
+
+  console.log("Selected dice to send:", selectedDice);
+
+  scoreBtn.disabled = true; 
+
+  fetch("/api/dice/score", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(selectedDice),
+  })
+    .then((response) => {
+      return response.json().then((data) => {
+        if (!response.ok) {
+          throw new Error(data.errorMessage);
+        }
+        return data;
+      });
+    })
+    .then((turnStatus) => {
+      const isPlayer1Active = document.getElementById("player1-card").classList.contains("active");
+      const targetSpanId = isPlayer1Active ? "actual-score-p1" : "actual-score-p2";
+      const scoreSpan = document.getElementById(targetSpanId);
+
+      scoreSpan.innerText = turnStatus.turnScore;
+
+      scoreBtn.disabled = true;   
+      rollBtn.disabled = false;   
+      endTurnBtn.disabled = false; 
+
+      selectedElements.forEach(die => die.remove()); 
+    })
+    .catch((error) => {
+      console.error("Chyba: ", error);
+      showMessage(error.message, true); 
+      scoreBtn.disabled = false; 
+    });
+});
+
+
+endTurnBtn.addEventListener('click', () => {
+  rollBtn.disabled = true;
+  scoreBtn.disabled = true;
+  endTurnBtn.disabled = true;
+
+  fetch('/api/dice/end-turn', { method: 'POST' })
+    .then(response => {
+        if (!response.ok) throw new Error("Chyba při ukončování tahu.");
+        return response.json();
+    })
+    .then(data => {
+        const isPlayer1Active = document.getElementById('player1-card').classList.contains('active');
+        const totalScoreSpanId = isPlayer1Active ? 'score-p1' : 'score-p2';
+        
+        document.getElementById(totalScoreSpanId).innerText = data.totalScore;
+        document.getElementById('actual-score-p1').innerText = '0';
+        document.getElementById('actual-score-p2').innerText = '0';
+
+        diceArea.innerHTML = '';
+        switchActivePlayerUI();
+        rollBtn.disabled = false;
+    })
+    .catch(error => {
+        console.error(error);
+        showMessage(error.message, true);
+        endTurnBtn.disabled = false; 
+    });
 });

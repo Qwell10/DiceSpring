@@ -2,6 +2,7 @@ package com.dice.controller;
 
 import com.dice.dto.ErrorResponse;
 import com.dice.dto.RollResponse;
+import com.dice.dto.TurnStatusResponse;
 import com.dice.service.GameService;
 import com.dice.service.ScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,8 @@ public class DiceController {
     @PostMapping("/dice/score")
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
-            //todo()
+            gameService.saveTurnScore(3000);
+            return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
         }
         if (scoringService.hasInvalidDice(pickedDice)) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Neplatné kostky!"));

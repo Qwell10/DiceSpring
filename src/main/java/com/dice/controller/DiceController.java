@@ -63,7 +63,9 @@ public class DiceController {
             return ResponseEntity.badRequest().body(new ErrorResponse("Neplatné kostky!"));
         }
 
-        //todo()
-        return null;
+        int turnScore = scoringService.calculateScore(pickedDice);
+        gameService.saveTurnScore(turnScore);
+
+        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
     }
 }

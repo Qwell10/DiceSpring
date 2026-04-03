@@ -71,6 +71,9 @@ rollBtn.addEventListener("click", () => {
         if (data.isBust === true) {
           showMessage(data.message, true);
 
+          document.getElementById('actual-score-p1').innerText = '0';
+          document.getElementById('actual-score-p2').innerText = '0';
+
           setTimeout(() => {
             diceArea.innerHTML = "";
             switchActivePlayerUI();
@@ -87,7 +90,6 @@ rollBtn.addEventListener("click", () => {
       rollBtn.disabled = false;
     });
 });
-
 
 
 scoreBtn.addEventListener("click", () => {
@@ -110,7 +112,7 @@ scoreBtn.addEventListener("click", () => {
     .then((response) => {
       return response.json().then((data) => {
         if (!response.ok) {
-          throw new Error(data.errorMessage);
+          throw new Error(data.errorMessage || data.message || "Neznámá chyba serveru ???");
         }
         return data;
       });
@@ -118,9 +120,8 @@ scoreBtn.addEventListener("click", () => {
     .then((turnStatus) => {
       const isPlayer1Active = document.getElementById("player1-card").classList.contains("active");
       const targetSpanId = isPlayer1Active ? "actual-score-p1" : "actual-score-p2";
-      const scoreSpan = document.getElementById(targetSpanId);
-
-      scoreSpan.innerText = turnStatus.turnScore;
+      
+      document.getElementById(targetSpanId).innerText = turnStatus.turnScore;
 
       scoreBtn.disabled = true;   
       rollBtn.disabled = false;   

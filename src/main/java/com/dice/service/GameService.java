@@ -3,6 +3,8 @@ package com.dice.service;
 import com.dice.dto.Player;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class GameService {
     Player player1 = new Player("Jarda", 0, 0, 6);
@@ -22,11 +24,17 @@ public class GameService {
         } else return player2.getRemainingDice();
     }
 
-    public void setActivePlayerRemainingDice(int diceCount) {
+    public void setActivePlayerRemainingDiceToSix() {
         if (activePlayerId == 1) {
-            player1.setRemainingDice(diceCount);
-        } else player2.setRemainingDice(diceCount);
+            player1.setRemainingDice(6);
+        } else player2.setRemainingDice(6);
 
+    }
+
+    public void setActivePlayerRemainingDice(List<Integer> pickedDice) {
+        if (activePlayerId == 1) {
+            player1.setRemainingDice(player1.getRemainingDice() - pickedDice.size());
+        } else player2.setRemainingDice(player2.getRemainingDice() - pickedDice.size());
     }
 
     public int getActivePlayerTurnScore() {

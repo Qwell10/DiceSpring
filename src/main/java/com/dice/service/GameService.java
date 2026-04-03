@@ -61,5 +61,33 @@ public class GameService {
         } else return player2.getTurnScore();
     }
 
+    public int getTotalScore() {
+        if (activePlayerId == 1) {
+            return player1.getTotalScore();
+        } else return player2.getTotalScore();
+    }
+
+    public int endTurn() {
+        int totalScore;
+
+        if (activePlayerId == 1) {
+            player1.setTotalScore(player1.getTotalScore() + player1.getTurnScore());
+            player1.setTurnScore(0);
+            player1.setRemainingDice(6);
+
+            totalScore = player1.getTotalScore();
+        } else {
+            player2.setTotalScore(player2.getTotalScore() + player2.getTurnScore());
+            player2.setTurnScore(0);
+            player2.setRemainingDice(6);
+
+            totalScore = player2.getTotalScore();
+        }
+
+        switchPlayer();
+
+        return totalScore;
+    }
+
 }
 

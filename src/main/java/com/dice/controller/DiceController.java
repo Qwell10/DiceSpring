@@ -1,5 +1,6 @@
 package com.dice.controller;
 
+import com.dice.dto.EndTurnResponse;
 import com.dice.dto.ErrorResponse;
 import com.dice.dto.RollResponse;
 import com.dice.dto.TurnStatusResponse;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/dice")
 public class DiceController {
 
     @Autowired
@@ -25,7 +26,7 @@ public class DiceController {
     @Autowired
     private GameService gameService;
 
-    @PostMapping("dice/roll")
+    @PostMapping("/roll")
     public ResponseEntity<?> rollDice() {
         List<Integer> rolledDice = scoringService.rollDice(gameService.getActivePlayerRemainingDice());
         //List<Integer> rolledDice = new ArrayList<>(List.of(1, 2, 3, 4, 5, 5));
@@ -41,7 +42,7 @@ public class DiceController {
         }
     }
 
-    @PostMapping("/dice/score")
+    @PostMapping("/score")
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
             gameService.saveTurnScore(3000);
@@ -70,5 +71,11 @@ public class DiceController {
         gameService.setActivePlayerRemainingDice(pickedDice);
 
         return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+    }
+
+    @PostMapping("/endTurn")
+    public ResponseEntity<?> endTurn() {
+        gameService.endTurn();
+        return ResponseEntity.ok().body(new EndTurnResponse(gameService.getTotalScore()));
     }
 }

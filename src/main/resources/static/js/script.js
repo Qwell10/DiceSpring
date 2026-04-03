@@ -142,9 +142,9 @@ endTurnBtn.addEventListener('click', () => {
   scoreBtn.disabled = true;
   endTurnBtn.disabled = true;
 
-  fetch('/api/dice/end-turn', { method: 'POST' })
+  fetch('/api/dice/endTurn', { method: 'POST' })
     .then(response => {
-        if (!response.ok) throw new Error("Chyba při ukončování tahu.");
+        if (!response.ok) throw new Error("!response.ok in endTurn");
         return response.json();
     })
     .then(data => {

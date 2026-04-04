@@ -75,7 +75,8 @@ public class DiceController {
 
     @PostMapping("/endTurn")
     public ResponseEntity<?> endTurn() {
-        gameService.endTurn();
-        return ResponseEntity.ok().body(new EndTurnResponse(gameService.getTotalScore()));
+        int totalScore = gameService.endTurn();
+
+        return ResponseEntity.ok().body(new EndTurnResponse(totalScore));
     }
 }

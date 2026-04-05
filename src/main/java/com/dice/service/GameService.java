@@ -18,10 +18,18 @@ public class GameService {
         } else activePlayerId = 1;
     }
 
-    public int getActivePlayerRemainingDice() {
+    public int prepareDiceForRoll() {
         if (activePlayerId == 1) {
+            if (player1.getRemainingDice() == 0) {
+                player1.setRemainingDice(6);
+            }
             return player1.getRemainingDice();
-        } else return player2.getRemainingDice();
+        } else {
+            if (player2.getRemainingDice() == 0) {
+                player2.setRemainingDice(6);
+            }
+            return player2.getRemainingDice();
+        }
     }
 
     public void setActivePlayerRemainingDiceToSix() {

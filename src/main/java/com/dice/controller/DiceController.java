@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -77,6 +76,8 @@ public class DiceController {
     public ResponseEntity<?> endTurn() {
         int totalScore = gameService.endTurn();
 
-        return ResponseEntity.ok().body(new EndTurnResponse(totalScore));
+        if (totalScore >= 5000) {
+            return ResponseEntity.ok().body(new EndTurnResponse(totalScore, true, "Výhra!"));
+        } else return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
     }
 }

@@ -2,7 +2,7 @@ const diceArea = document.getElementById("diceArea");
 const gameMessage = document.getElementById("gameMessage");
 const rollBtn = document.getElementById("rollBtn");
 const scoreBtn = document.getElementById("scoreBtn");
-const endTurnBtn = document.getElementById('endTurnBtn');
+const endTurnBtn = document.getElementById("endTurnBtn");
 
 function switchActivePlayerUI() {
   const player1Box = document.getElementById("player1-card");
@@ -30,7 +30,7 @@ function showMessage(text, isError) {
 rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;
   scoreBtn.disabled = true;
-  endTurnBtn.disabled = true; 
+  endTurnBtn.disabled = true;
   diceArea.innerHTML = "";
 
   fetch("/api/dice/roll", { method: "POST" })
@@ -55,12 +55,13 @@ rollBtn.addEventListener("click", () => {
           if (data.isBust === false) {
             die.addEventListener("click", () => {
               die.classList.toggle("selected");
-              const selectedCount = document.querySelectorAll(".die.selected").length;
+              const selectedCount =
+                document.querySelectorAll(".die.selected").length;
 
               if (selectedCount > 0) {
-                scoreBtn.disabled = false; 
+                scoreBtn.disabled = false;
               } else {
-                scoreBtn.disabled = true; 
+                scoreBtn.disabled = true;
               }
             });
           } else {
@@ -71,16 +72,15 @@ rollBtn.addEventListener("click", () => {
         if (data.isBust === true) {
           showMessage(data.message, true);
 
-          document.getElementById('actual-score-p1').innerText = '0';
-          document.getElementById('actual-score-p2').innerText = '0';
+          document.getElementById("actual-score-p1").innerText = "0";
+          document.getElementById("actual-score-p2").innerText = "0";
 
           setTimeout(() => {
             diceArea.innerHTML = "";
             switchActivePlayerUI();
-            rollBtn.disabled = false; 
+            rollBtn.disabled = false;
           }, 3000);
         } else {
-           
         }
       }, 600);
     })
@@ -90,7 +90,6 @@ rollBtn.addEventListener("click", () => {
       rollBtn.disabled = false;
     });
 });
-
 
 scoreBtn.addEventListener("click", () => {
   const selectedElements = document.querySelectorAll(".die.selected");
@@ -102,7 +101,7 @@ scoreBtn.addEventListener("click", () => {
 
   console.log("Selected dice to send:", selectedDice);
 
-  scoreBtn.disabled = true; 
+  scoreBtn.disabled = true;
 
   fetch("/api/dice/score", {
     method: "POST",
@@ -112,56 +111,71 @@ scoreBtn.addEventListener("click", () => {
     .then((response) => {
       return response.json().then((data) => {
         if (!response.ok) {
-          throw new Error(data.errorMessage || data.message || "Neznámá chyba serveru ???");
+          throw new Error(
+            data.errorMessage || data.message || "Neznámá chyba serveru ???",
+          );
         }
         return data;
       });
     })
     .then((turnStatus) => {
-      const isPlayer1Active = document.getElementById("player1-card").classList.contains("active");
-      const targetSpanId = isPlayer1Active ? "actual-score-p1" : "actual-score-p2";
-      
+      const isPlayer1Active = document
+        .getElementById("player1-card")
+        .classList.contains("active");
+      const targetSpanId = isPlayer1Active
+        ? "actual-score-p1"
+        : "actual-score-p2";
+
       document.getElementById(targetSpanId).innerText = turnStatus.turnScore;
 
-      scoreBtn.disabled = true;   
-      rollBtn.disabled = false;   
-      endTurnBtn.disabled = false; 
+      scoreBtn.disabled = true;
+      rollBtn.disabled = false;
+      endTurnBtn.disabled = false;
 
-      selectedElements.forEach(die => die.remove()); 
+      selectedElements.forEach((die) => die.remove());
     })
     .catch((error) => {
       console.error("Chyba: ", error);
-      showMessage(error.message, true); 
-      scoreBtn.disabled = false; 
+      showMessage(error.message, true);
+      scoreBtn.disabled = false;
     });
 });
 
-
-endTurnBtn.addEventListener('click', () => {
+endTurnBtn.addEventListener("click", () => {
   rollBtn.disabled = true;
   scoreBtn.disabled = true;
   endTurnBtn.disabled = true;
 
-  fetch('/api/dice/endTurn', { method: 'POST' })
-    .then(response => {
-        if (!response.ok) throw new Error("!response.ok in endTurn");
-        return response.json();
+  fetch("/api/dice/endTurn", { method: "POST" })
+    .then((response) => {
+      if (!response.ok) throw new Error("!response.ok in endTurn");
+      return response.json();
     })
-    .then(data => {
-        const isPlayer1Active = document.getElementById('player1-card').classList.contains('active');
-        const totalScoreSpanId = isPlayer1Active ? 'score-p1' : 'score-p2';
-        
-        document.getElementById(totalScoreSpanId).innerText = data.totalScore;
-        document.getElementById('actual-score-p1').innerText = '0';
-        document.getElementById('actual-score-p2').innerText = '0';
+    .then((data) => {
+      const isPlayer1Active = document
+        .getElementById("player1-card")
+        .classList.contains("active");
+      const totalScoreSpanId = isPlayer1Active ? "score-p1" : "score-p2";
 
-        diceArea.innerHTML = '';
+      document.getElementById(totalScoreSpanId).innerText = data.totalScore;
+      document.getElementById("actual-score-p1").innerText = "0";
+      document.getElementById("actual-score-p2").innerText = "0";
+
+      if (data.isWinner === true) {
+        if (typeof showMessage === "function") {
+          showMessage("🎉 " + data.message + " 🎉", false);
+        }
+
+        diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí ${isPlayer1Active ? "Hráč 1" : "Hráč 2"}</h2>`;
+
+      } else {
         switchActivePlayerUI();
         rollBtn.disabled = false;
+      }
     })
-    .catch(error => {
-        console.error(error);
-        showMessage(error.message, true);
-        endTurnBtn.disabled = false; 
+    .catch((error) => {
+      console.error(error);
+      showMessage(error.message, true);
+      endTurnBtn.disabled = false;
     });
 });

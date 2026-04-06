@@ -45,12 +45,6 @@ public class GameService {
         } else player2.setRemainingDice(player2.getRemainingDice() - pickedDice.size());
     }
 
-    public int getActivePlayerTurnScore() {
-        if (activePlayerId == 1) {
-            return player1.getTurnScore();
-        } else return player2.getTurnScore();
-    }
-
     public void setActivePlayerTurnScore(int turnScore) {
         if (activePlayerId == 1) {
             player1.setTurnScore(turnScore);
@@ -67,12 +61,6 @@ public class GameService {
         if (activePlayerId == 1) {
             return player1.getTurnScore();
         } else return player2.getTurnScore();
-    }
-
-    public int getTotalScore() {
-        if (activePlayerId == 1) {
-            return player1.getTotalScore();
-        } else return player2.getTotalScore();
     }
 
     public int endTurn() {

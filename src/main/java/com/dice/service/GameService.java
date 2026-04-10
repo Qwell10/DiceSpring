@@ -1,12 +1,18 @@
 package com.dice.service;
 
+import com.dice.dto.GameState;
 import com.dice.dto.Player;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class GameService {
+
+    @Autowired
+    private ScoringService scoringService;
+
     Player player1 = new Player("Jarda", 0, 0, 6);
     Player player2 = new Player("Milan", 0, 0, 6);
 
@@ -83,6 +89,17 @@ public class GameService {
         switchPlayer();
 
         return totalScore;
+    }
+                       // REST //
+    ////////////////////////////////////////////////////////////
+                    // WEBSOCKET //
+
+    public GameState createSnapshotRollDice() {
+        List<Integer> rolledDice = scoringService.rollDice(prepareDiceForRoll());
+        if (!scoringService.isRollScorable(rolledDice)) {
+            switchPlayer();
+        }
+        return new GameState(player1, player2, rolledDice, activePlayerId);
     }
 
 }

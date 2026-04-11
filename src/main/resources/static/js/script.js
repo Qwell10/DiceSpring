@@ -4,6 +4,49 @@ const rollBtn = document.getElementById("rollBtn");
 const scoreBtn = document.getElementById("scoreBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
 
+let myPlayerId = 0;
+let myRole = "";
+let stompClient = null;
+
+async function initializeGame() {
+    try {
+        console.log("Odesílám žádost o registraci...");
+
+        const response = await fetch("/api/dice/join", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        myPlayerId = data.id;
+        myRole = data.role;
+
+        console.log(`Úspěšně zaregistrován! Moje ID: ${myPlayerId}, Role: ${myRole}`);
+
+        connect();
+
+    } catch (error) {
+        console.error("Chyba při registraci hráče:", error);
+    }
+}
+
+initializeGame();
+
+function connect() {
+    const socket = new SockJS('/ws');
+
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        console.log('✅ WebSocket připojen: ' + frame);
+
+        //TADY pozdeji "odbery" (subscribe) - aby prohlizec vedel co se deje na serveru
+
+    }, function (error) {
+        console.error('❌ Chyba WebSocketu: ' + error);
+    });
+}
+
 function switchActivePlayerUI() {
   const player1Box = document.getElementById("player1-card");
   const player2Box = document.getElementById("player2-card");

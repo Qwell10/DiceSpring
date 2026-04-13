@@ -13,8 +13,7 @@ public class DiceWsController {
     @Autowired
     private GameService gameService;
 
-
-    //todo - nejprve udelat automaticke prirazeni myPlayerId 1/2 a pak dodelat rollDice()
+    //todo - finish rollDice()
 
     @MessageMapping("/roll") // @MessageMapping se stará o to, co jde do serveru od konkrétního hráče
     @SendTo("/topic/dice") // @SendTo vrací pro všechny na tomto endpointu

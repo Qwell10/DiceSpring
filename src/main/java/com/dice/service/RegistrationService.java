@@ -2,19 +2,24 @@ package com.dice.service;
 
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
 public class RegistrationService {
 
-    private boolean isPlayer1Occupied = false;
-    private boolean isPlayer2Occupied = false;
+    private final Map<String, Integer> sessionToPlayerMap = new ConcurrentHashMap<>();
+
+    private boolean isPlayer1Connected = false;
+    private boolean isPlayer2Connected = false;
 
     public int assignId() {
-        if (!isPlayer1Occupied) {
-            isPlayer1Occupied = true;
+        if (!isPlayer1Connected) {
+            isPlayer1Connected = true;
             return 1;
 
-        } else if (!isPlayer2Occupied) {
-            isPlayer2Occupied = true;
+        } else if (!isPlayer2Connected) {
+            isPlayer2Connected = true;
             return 2;
         } else return 0;
     }

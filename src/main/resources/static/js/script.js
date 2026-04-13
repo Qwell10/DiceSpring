@@ -34,10 +34,13 @@ initializeGame();
 
 function connect() {
     const socket = new SockJS('/ws');
-
     stompClient = Stomp.over(socket);
 
-    stompClient.connect({}, function (frame) {
+    const headers = {
+        'playerId': myPlayerId 
+    };
+
+    stompClient.connect(headers, function (frame) {
         console.log('✅ WebSocket připojen: ' + frame);
 
         //TADY pozdeji "odbery" (subscribe) - aby prohlizec vedel co se deje na serveru

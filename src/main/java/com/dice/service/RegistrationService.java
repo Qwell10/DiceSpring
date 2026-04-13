@@ -28,4 +28,7 @@ public class RegistrationService {
         return (id == 0) ? "SPECTATOR" : "PLAYER";
     }
 
+    public void registerSession(String sessionId, int playerId) {
+        sessionToPlayerMap.put(sessionId, playerId);
+    }
 }

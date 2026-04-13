@@ -18,8 +18,16 @@ public class WebSocketEventListener {
     public void handleConnect(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String playerId = accessor.getFirstNativeHeader("playerId");
+        String playerIdStr = accessor.getFirstNativeHeader("playerId");
         String sessionId = accessor.getSessionId();
+
+        if (playerIdStr != null) {
+            int playerId = Integer.parseInt(playerIdStr);
+
+            registrationService.registerSession(sessionId, playerId);
+
+            System.out.println("✅ Connected: Session " + sessionId + " -> Player " + playerId);
+        }
 
 
     }

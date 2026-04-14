@@ -65,6 +65,41 @@ h1 {
     color: #ea580c;
 }
 
+.status-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    gap: 8px;              
+    margin-top: 5px;
+}
+
+.status-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease; 
+}
+
+.status-dot.offline {
+    background-color: #e74c3c; 
+    box-shadow: 0 0 4px rgba(231, 76, 60, 0.4);
+}
+
+.status-text-offline {
+    color: black;
+    font-weight: normal;
+}
+
+.status-dot.online {
+    background-color: #2ecc71;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.6); 
+}
+
+.status-text-online {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
 .player-card.active {
     border-color: #2563eb;
     background: #eff6ff;

@@ -4,12 +4,115 @@ const rollBtn = document.getElementById("rollBtn");
 const scoreBtn = document.getElementById("scoreBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
 
+let myPlayerId = 0;
+let myRole = "";
+let stompClient = null;
+
+async function initializeGame() {
+    try {
+        console.log("Odesílám žádost o registraci...");
+
+        const response = await fetch("/api/dice/join", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        myPlayerId = data.id;
+        myRole = data.role;
+
+        console.log(`Úspěšně zaregistrován! Moje ID: ${myPlayerId}, Role: ${myRole}`);
+
+        connect();
+
+    } catch (error) {
+        console.error("Chyba při registraci hráče:", error);
+    }
+}
+
+initializeGame();
+
+function connect() {
+  const socket = new SockJS("/ws");
+  stompClient = Stomp.over(socket);
+
+  const headers = {
+    playerId: myPlayerId,
+  };
+
+  stompClient.connect(
+    headers,
+    function (frame) {
+      console.log("✅ WebSocket připojen: " + frame);
+
+      stompClient.subscribe("/topic/player-status", function (statusMessage) {
+        const status = JSON.parse(statusMessage.body);
+        updatePlayerStatusUI(status.player1Connected, status.player2Connected);
+      });
+
+      fetch("/api/dice/status")
+        .then((response) => response.json())
+        .then((status) => {
+          console.log("📥 Načten úvodní stav:", status);
+          updatePlayerStatusUI(
+            status.isPlayer1Connected,
+            status.isPlayer2Connected,
+          );
+        })
+        .catch((error) =>
+          console.error("❌ Chyba při načítání úvodního stavu:", error),
+        );
+    },
+    function (error) {
+      console.error("❌ Chyba WebSocketu: " + error);
+    },
+  );
+}
+
 function switchActivePlayerUI() {
   const player1Box = document.getElementById("player1-card");
   const player2Box = document.getElementById("player2-card");
 
   player1Box.classList.toggle("active");
   player2Box.classList.toggle("active");
+}
+
+function updatePlayerStatusUI(p1Connected, p2Connected) {
+    const card1 = document.getElementById("player1-card");
+    const statusP1 = document.getElementById("status-p1");
+    const dotP1 = document.getElementById("dot-p1");
+
+    const card2 = document.getElementById("player2-card");
+    const statusP2 = document.getElementById("status-p2");
+    const dotP2 = document.getElementById("dot-p2");
+
+    if (p1Connected) {
+        card1.style.opacity = "1"; 
+        card1.style.border = "2px solid #2ecc71"; 
+
+        statusP1.innerText = "Připojen";
+        dotP1.classList.replace('offline', 'online');
+    } else {
+        card1.style.opacity = "0.5"; 
+        card1.style.border = "2px solid #e74c3c";
+
+        statusP1.innerText = "Čeká se na připojení...";
+        dotP1.classList.replace('online', 'offline');
+    }
+
+    if (p2Connected) {
+        card2.style.opacity = "1";
+        card2.style.border = "2px solid #2ecc71";
+        
+        statusP2.innerText = "Připojen";
+        dotP2.classList.replace('offline', 'online');
+    } else {
+        card2.style.opacity = "0.5";
+        card2.style.border = "2px solid #e74c3c";
+        
+        statusP2.innerText = "Čeká se na připojení...";
+        dotP2.classList.replace('online', 'offline');
+    }
 }
 
 function showMessage(text, isError) {
@@ -167,7 +270,6 @@ endTurnBtn.addEventListener("click", () => {
         }
 
         diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí ${isPlayer1Active ? "Hráč 1" : "Hráč 2"}</h2>`;
-
       } else {
         switchActivePlayerUI();
         rollBtn.disabled = false;

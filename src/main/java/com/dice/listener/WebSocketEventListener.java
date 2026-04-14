@@ -14,6 +14,11 @@ public class WebSocketEventListener {
     @Autowired
     private RegistrationService registrationService;
 
+
+    //todo((((((((((((((((  handleConnect + handleDisconnect  )))))))))))))))))
+
+
+
     @EventListener
     public void handleConnect(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -28,13 +33,15 @@ public class WebSocketEventListener {
 
             System.out.println("✅ Connected: Session " + sessionId + " -> Player " + playerId);
         }
-
-
     }
 
     @EventListener
     public void handleDisconnect(SessionDisconnectEvent event) {
-        //todo(((((((((((((((())))))))))))))))) - after handleConnect()
+        String sessionId = event.getSessionId();
+
+        registrationService.unregisterSession(sessionId);
+
+        System.out.println("❌ Disconnected: Session " + sessionId);
     }
 
 }

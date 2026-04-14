@@ -33,21 +33,27 @@ async function initializeGame() {
 initializeGame();
 
 function connect() {
-    const socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
+  const socket = new SockJS("/ws");
+  stompClient = Stomp.over(socket);
 
-    const headers = {
-        'playerId': myPlayerId 
-    };
+  const headers = {
+    playerId: myPlayerId,
+  };
 
-    stompClient.connect(headers, function (frame) {
-        console.log('✅ WebSocket připojen: ' + frame);
+  stompClient.connect(
+    headers,
+    function (frame) {
+      console.log("✅ WebSocket připojen: " + frame);
 
-        //TADY pozdeji "odbery" (subscribe) - aby prohlizec vedel co se deje na serveru
-
-    }, function (error) {
-        console.error('❌ Chyba WebSocketu: ' + error);
-    });
+      stompClient.subscribe("/topic/player-status", function (statusMessage) {
+        const status = JSON.parse(statusMessage.body);
+        updatePlayerStatusUI(status.player1Connected, status.player2Connected);
+      });
+    },
+    function (error) {
+      console.error("❌ Chyba WebSocketu: " + error);
+    },
+  );
 }
 
 function switchActivePlayerUI() {
@@ -56,6 +62,28 @@ function switchActivePlayerUI() {
 
   player1Box.classList.toggle("active");
   player2Box.classList.toggle("active");
+}
+
+function updatePlayerStatusUI(p1Connected, p2Connected) {
+    const p1Label = document.getElementById("player1-card");
+    const p2Label = document.getElementById("player2-card");
+
+    if (p1Connected) {
+        card1.style.opacity = "1"; 
+        card1.style.border = "2px solid green"; 
+    } else {
+        card1.style.opacity = "0.5"; 
+        card1.style.border = "2px solid red";
+    }
+
+   
+    if (p2Connected) {
+        card2.style.opacity = "1";
+        card2.style.border = "2px solid green";
+    } else {
+        card2.style.opacity = "0.5";
+        card2.style.border = "2px solid red";
+    }
 }
 
 function showMessage(text, isError) {
@@ -213,7 +241,6 @@ endTurnBtn.addEventListener("click", () => {
         }
 
         diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí ${isPlayer1Active ? "Hráč 1" : "Hráč 2"}</h2>`;
-
       } else {
         switchActivePlayerUI();
         rollBtn.disabled = false;

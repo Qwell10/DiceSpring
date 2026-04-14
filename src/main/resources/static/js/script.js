@@ -49,6 +49,19 @@ function connect() {
         const status = JSON.parse(statusMessage.body);
         updatePlayerStatusUI(status.player1Connected, status.player2Connected);
       });
+
+      fetch("/api/dice/status")
+        .then((response) => response.json())
+        .then((status) => {
+          console.log("📥 Načten úvodní stav:", status);
+          updatePlayerStatusUI(
+            status.isPlayer1Connected,
+            status.isPlayer2Connected,
+          );
+        })
+        .catch((error) =>
+          console.error("❌ Chyba při načítání úvodního stavu:", error),
+        );
     },
     function (error) {
       console.error("❌ Chyba WebSocketu: " + error);
@@ -65,24 +78,40 @@ function switchActivePlayerUI() {
 }
 
 function updatePlayerStatusUI(p1Connected, p2Connected) {
-    const p1Label = document.getElementById("player1-card");
-    const p2Label = document.getElementById("player2-card");
+    const card1 = document.getElementById("player1-card");
+    const statusP1 = document.getElementById("status-p1");
+    const dotP1 = document.getElementById("dot-p1");
+
+    const card2 = document.getElementById("player2-card");
+    const statusP2 = document.getElementById("status-p2");
+    const dotP2 = document.getElementById("dot-p2");
 
     if (p1Connected) {
         card1.style.opacity = "1"; 
-        card1.style.border = "2px solid green"; 
+        card1.style.border = "2px solid #2ecc71"; 
+
+        statusP1.innerText = "Připojen";
+        dotP1.classList.replace('offline', 'online');
     } else {
         card1.style.opacity = "0.5"; 
-        card1.style.border = "2px solid red";
+        card1.style.border = "2px solid #e74c3c";
+
+        statusP1.innerText = "Čeká se na připojení...";
+        dotP1.classList.replace('online', 'offline');
     }
 
-   
     if (p2Connected) {
         card2.style.opacity = "1";
-        card2.style.border = "2px solid green";
+        card2.style.border = "2px solid #2ecc71";
+        
+        statusP2.innerText = "Připojen";
+        dotP2.classList.replace('offline', 'online');
     } else {
         card2.style.opacity = "0.5";
-        card2.style.border = "2px solid red";
+        card2.style.border = "2px solid #e74c3c";
+        
+        statusP2.innerText = "Čeká se na připojení...";
+        dotP2.classList.replace('online', 'offline');
     }
 }
 

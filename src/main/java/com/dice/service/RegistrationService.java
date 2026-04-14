@@ -56,4 +56,13 @@ public class RegistrationService {
         PlayerStatus playerStatus = new PlayerStatus(isPlayer1Connected, isPlayer2Connected);
         messagingTemplate.convertAndSend("/topic/player-status", playerStatus);
     }
+
+    public boolean isPlayer1Connected() {
+        return this.isPlayer1Connected;
+    }
+
+    public boolean isPlayer2Connected() {
+        return this.isPlayer2Connected;
+    }
+
 }

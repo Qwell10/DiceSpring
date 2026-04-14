@@ -9,35 +9,41 @@
 </head>
 
 <body>
-    <div id="gameMessage"></div>
+<div id="gameMessage"></div>
 
-    <div id="scoreboard" class="scoreboard">
-        <div id="player1-card" class="player-card active">
-            <h4 class="player-name">Hráč 1</h4>
-            <small id="status-p1">Odpojen</small>
-            <h3 class="player-score">Celkové Score: <span id="score-p1">0</span></h3>
-            <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p1">0</span></h2>
-        </div>
-
-        <div id="player2-card" class="player-card">
-            <h4 class="player-name">Hráč 2</h4>
-            <small id="status-p2">Odpojen</small>
-            <h3 class="player-score">Celkové Score: <span id="score-p2">0</span></h3>
-            <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p2">0</span></h2>
+<div id="scoreboard" class="scoreboard">
+    <div id="player1-card" class="player-card active">
+        <h4 class="player-name">Hráč 1</h4>
+        <h3 class="player-score">Celkové Score: <span id="score-p1">0</span></h3>
+        <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p1">0</span></h2>
+        <div class="status-wrapper">
+            <span id="dot-p1" class="status-dot offline"></span>
+            <small id="status-p1" class="status-text-offline">Čeká se na připojení...</small>
         </div>
     </div>
 
-    <div id="diceArea" class="dice-container"></div>
-
-    <div class="button-container">
-        <button id="rollBtn">Hodit kostkama</button>
-        <button id="scoreBtn" disabled>Vybrat kostky</button>
-        <button id="endTurnBtn" disabled>Zapsat body a ukončit</button>
+    <div id="player2-card" class="player-card">
+        <h4 class="player-name">Hráč 2</h4>
+        <h3 class="player-score">Celkové Score: <span id="score-p2">0</span></h3>
+        <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p2">0</span></h2>
+        <div class="status-wrapper">
+            <span id="dot-p2" class="status-dot offline"></span>
+            <small id="status-p2" class="status-text-offline">Čeká se na připojení...</small>
+        </div>
     </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <script src="/js/script.js"></script>
+<div id="diceArea" class="dice-container"></div>
+
+<div class="button-container">
+    <button id="rollBtn">Hodit kostkama</button>
+    <button id="scoreBtn" disabled>Vybrat kostky</button>
+    <button id="endTurnBtn" disabled>Zapsat body a ukončit</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/js/script.js"></script>
 </body>
 
 </html>

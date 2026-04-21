@@ -47,7 +47,7 @@ function connect() {
 
       stompClient.subscribe("/topic/player-status", function (statusMessage) {
         const status = JSON.parse(statusMessage.body);
-        updatePlayerStatusUI(status.player1Connected, status.player2Connected);
+        updatePlayerStatusUI(status.isPlayer1Connected, status.isPlayer2Connected);
       });
 
       fetch("/api/dice/status")

@@ -33,6 +33,8 @@ async function initializeGame() {
 initializeGame();
 
 function connect() {
+  updateButtonsUI(1)
+
   const socket = new SockJS("/ws");
   stompClient = Stomp.over(socket);
 
@@ -112,6 +114,16 @@ function updatePlayerStatusUI(p1Connected, p2Connected) {
         
         statusP2.innerText = "Čeká se na připojení...";
         dotP2.classList.replace('online', 'offline');
+    }
+}
+
+function updateButtonsUI(activePlayerId) {
+    if (myPlayerId === activePlayerId) {
+        rollBtn.disabled = false; 
+    } else {
+        rollBtn.disabled = true;
+        scoreBtn.disabled = true;
+        endTurnBtn.disabled = true;
     }
 }
 

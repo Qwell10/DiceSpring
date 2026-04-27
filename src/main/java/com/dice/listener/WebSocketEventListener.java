@@ -14,11 +14,6 @@ public class WebSocketEventListener {
     @Autowired
     private RegistrationService registrationService;
 
-
-    //todo((((((((((((((((  handleConnect + handleDisconnect  )))))))))))))))))
-
-
-
     @EventListener
     public void handleConnect(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());

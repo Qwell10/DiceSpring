@@ -94,11 +94,7 @@ public class GameService {
     ////////////////////////////////////////////////////////////
                     // WEBSOCKET //
 
-    public GameState createSnapshotRollDice() {
-        List<Integer> rolledDice = scoringService.rollDice(prepareDiceForRoll());
-        if (!scoringService.isRollScorable(rolledDice)) {
-            switchPlayer();
-        }
+    public GameState createSnapshotRollDice(List<Integer> rolledDice) {
         return new GameState(player1, player2, rolledDice, activePlayerId);
     }
 

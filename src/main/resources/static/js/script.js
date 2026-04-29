@@ -52,6 +52,19 @@ function connect() {
         updatePlayerStatusUI(status.isPlayer1Connected, status.isPlayer2Connected);
       });
 
+      stompClient.subscribe("/topic/game-state", function (message) {
+        const gameState = JSON.parse(message.body);
+        console.log("Nový stav hry ze serveru:", gameState);
+
+        updateButtonsUI(gameState.activePlayerId);
+
+        // Pokud server poslal nějaké kostky a já NEJSEM na tahu, vykreslím je jako divák
+        if (gameState.rolledDice && gameState.rolledDice.length > 0 && myPlayerId !== gameState.activePlayerId) {
+            // allowSelection = false -> divák na ně nemůže klikat
+            renderDice(gameState.rolledDice, false, false); 
+        }
+      });
+
       fetch("/api/dice/status")
         .then((response) => response.json())
         .then((status) => {
@@ -127,6 +140,47 @@ function updateButtonsUI(activePlayerId) {
     }
 }
 
+function renderDice(diceValues, isBust, allowSelection) {
+  // 1. Vyčistíme stůl před novým hodem
+  diceArea.innerHTML = "";
+  const diceElements = [];
+
+  // 2. Vytvoříme kostky s otazníkem a animací točení
+  for (let i = 0; i < diceValues.length; i++) {
+    const die = document.createElement("div");
+    die.className = "die rolling";
+    die.innerText = "?";
+    diceArea.appendChild(die);
+    diceElements.push(die);
+  }
+
+  // 3. Po 600ms zastavíme animaci a ukážeme reálná čísla
+  setTimeout(() => {
+    diceElements.forEach((die, index) => {
+      die.classList.remove("rolling");
+      die.innerText = diceValues[index];
+
+      // Pokud hráč přetáhl (bust), obarvíme kostku
+      if (isBust === true) {
+        die.classList.add("bust-die");
+      } 
+      // Pokud nepřetáhl a MÁ právo vybírat (jeho tah), přidáme klikání
+      else if (allowSelection === true) {
+        die.addEventListener("click", () => {
+          die.classList.toggle("selected");
+          const selectedCount = document.querySelectorAll(".die.selected").length;
+
+          if (selectedCount > 0) {
+            scoreBtn.disabled = false;
+          } else {
+            scoreBtn.disabled = true;
+          }
+        });
+      }
+    });
+  }, 600);
+}
+
 function showMessage(text, isError) {
   gameMessage.innerText = text;
 
@@ -146,58 +200,26 @@ rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;
   scoreBtn.disabled = true;
   endTurnBtn.disabled = true;
-  diceArea.innerHTML = "";
 
   fetch("/api/dice/roll", { method: "POST" })
     .then((response) => response.json())
     .then((data) => {
-      const diceValues = data.dice;
-      const diceElements = [];
+      
+      renderDice(data.dice, data.isBust, true);
 
-      for (let i = 0; i < diceValues.length; i++) {
-        const die = document.createElement("div");
-        die.className = "die rolling";
-        die.innerText = "?";
-        diceArea.appendChild(die);
-        diceElements.push(die);
-      }
-
-      setTimeout(() => {
-        diceElements.forEach((die, index) => {
-          die.classList.remove("rolling");
-          die.innerText = diceValues[index];
-
-          if (data.isBust === false) {
-            die.addEventListener("click", () => {
-              die.classList.toggle("selected");
-              const selectedCount =
-                document.querySelectorAll(".die.selected").length;
-
-              if (selectedCount > 0) {
-                scoreBtn.disabled = false;
-              } else {
-                scoreBtn.disabled = true;
-              }
-            });
-          } else {
-            die.classList.add("bust-die");
-          }
-        });
-
-        if (data.isBust === true) {
+      if (data.isBust === true) {
+        setTimeout(() => {
           showMessage(data.message, true);
-
           document.getElementById("actual-score-p1").innerText = "0";
           document.getElementById("actual-score-p2").innerText = "0";
+        }, 600);
 
-          setTimeout(() => {
-            diceArea.innerHTML = "";
-            switchActivePlayerUI();
-            rollBtn.disabled = false;
-          }, 3000);
-        } else {
-        }
-      }, 600);
+        setTimeout(() => {
+          diceArea.innerHTML = "";
+          switchActivePlayerUI();
+          rollBtn.disabled = false;
+        }, 3600);
+      }
     })
     .catch((error) => {
       console.error("Chyba spojení s Javou:", error);

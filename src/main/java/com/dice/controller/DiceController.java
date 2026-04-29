@@ -32,6 +32,8 @@ public class DiceController {
         List<Integer> rolledDice = scoringService.rollDice(gameService.prepareDiceForRoll());
         //  List<Integer> rolledDice = new ArrayList<>(List.of(1, 1, 5, 3, 3, 3));
 
+        broadcastGameState(rolledDice);
+
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
         } else {

@@ -5,6 +5,8 @@ import com.dice.service.GameService;
 import com.dice.service.ScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +28,12 @@ public class DiceController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @MessageMapping("/game.select-die")
+    @SendTo("/topic/dice-selection")
+    public DieSelectDto broadcastDieSelection(DieSelectDto dto) {
+        return dto;
+    }
 
     @PostMapping("/roll")
     public ResponseEntity<?> rollDice() {
@@ -85,7 +93,6 @@ public class DiceController {
         } else return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
     }
 
-    //todo - private broadcastGameState() -> vyzada si z GameService GameState a pomocí messagingTemplate ho pošle do /topic/game-state
     private void broadcastGameState(List<Integer> rolledDice) {
         GameState gameState = gameService.createSnapshotRollDice(rolledDice);
         messagingTemplate.convertAndSend("/topic/game-state", gameState);

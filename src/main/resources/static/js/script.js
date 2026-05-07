@@ -58,17 +58,32 @@ function connect() {
 
         updateButtonsUI(gameState.activePlayerId);
 
-        // Pokud server poslal nějaké kostky a já NEJSEM na tahu, vykreslím je jako divák
         if (gameState.rolledDice && gameState.rolledDice.length > 0 && myPlayerId !== gameState.activePlayerId) {
-            // allowSelection = false -> divák na ně nemůže klikat
             renderDice(gameState.rolledDice, false, false); 
+        }
+      });
+
+      stompClient.subscribe("/topic/dice-selection", function (message) {
+        const selectionData = JSON.parse(message.body);
+        console.log("Změna výběru kostky ze serveru:", selectionData);
+
+        const currentDiceElements = diceArea.children;
+
+        if (currentDiceElements[selectionData.dieIndex]) {
+            const targetDie = currentDiceElements[selectionData.dieIndex];
+            
+            if (selectionData.isSelected === true) {
+                targetDie.classList.add("selected");
+            } else {
+                targetDie.classList.remove("selected");
+            }
         }
       });
 
       fetch("/api/dice/status")
         .then((response) => response.json())
         .then((status) => {
-          console.log("📥 Načten úvodní stav:", status);
+          console.log("Načten úvodní stav:", status);
           updatePlayerStatusUI(
             status.isPlayer1Connected,
             status.isPlayer2Connected,
@@ -140,12 +155,11 @@ function updateButtonsUI(activePlayerId) {
     }
 }
 
+
 function renderDice(diceValues, isBust, allowSelection) {
-  // 1. Vyčistíme stůl před novým hodem
   diceArea.innerHTML = "";
   const diceElements = [];
 
-  // 2. Vytvoříme kostky s otazníkem a animací točení
   for (let i = 0; i < diceValues.length; i++) {
     const die = document.createElement("div");
     die.className = "die rolling";
@@ -154,26 +168,34 @@ function renderDice(diceValues, isBust, allowSelection) {
     diceElements.push(die);
   }
 
-  // 3. Po 600ms zastavíme animaci a ukážeme reálná čísla
   setTimeout(() => {
     diceElements.forEach((die, index) => {
       die.classList.remove("rolling");
       die.innerText = diceValues[index];
 
-      // Pokud hráč přetáhl (bust), obarvíme kostku
       if (isBust === true) {
         die.classList.add("bust-die");
       } 
-      // Pokud nepřetáhl a MÁ právo vybírat (jeho tah), přidáme klikání
+
       else if (allowSelection === true) {
         die.addEventListener("click", () => {
-          die.classList.toggle("selected");
+          
+          const isNowSelected = die.classList.toggle("selected");
+          
           const selectedCount = document.querySelectorAll(".die.selected").length;
-
           if (selectedCount > 0) {
             scoreBtn.disabled = false;
           } else {
             scoreBtn.disabled = true;
+          }
+
+          if (stompClient && stompClient.connected) {
+             const messageObj = {
+                 dieIndex: index,          
+                 isSelected: isNowSelected 
+             };
+             
+             stompClient.send("/app/game.select-die", {}, JSON.stringify(messageObj));
           }
         });
       }

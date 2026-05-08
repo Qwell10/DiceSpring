@@ -7,6 +7,7 @@ const endTurnBtn = document.getElementById("endTurnBtn");
 let myPlayerId = 0;
 let myRole = "";
 let stompClient = null;
+let currentActivePlayerId = 1;
 
 async function initializeGame() {
     try {
@@ -56,7 +57,10 @@ function connect() {
         const gameState = JSON.parse(message.body);
         console.log("Nový stav hry ze serveru:", gameState);
 
-        updateButtonsUI(gameState.activePlayerId);
+        if (currentActivePlayerId !== gameState.activePlayerId) {
+            currentActivePlayerId = gameState.activePlayerId;
+            updateButtonsUI(gameState.activePlayerId);
+        }
 
         if (gameState.rolledDice && gameState.rolledDice.length > 0 && myPlayerId !== gameState.activePlayerId) {
             renderDice(gameState.rolledDice, false, false); 
@@ -239,7 +243,6 @@ rollBtn.addEventListener("click", () => {
         setTimeout(() => {
           diceArea.innerHTML = "";
           switchActivePlayerUI();
-          rollBtn.disabled = false;
         }, 3600);
       }
     })
@@ -328,7 +331,6 @@ endTurnBtn.addEventListener("click", () => {
         diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí ${isPlayer1Active ? "Hráč 1" : "Hráč 2"}</h2>`;
       } else {
         switchActivePlayerUI();
-        rollBtn.disabled = false;
       }
     })
     .catch((error) => {

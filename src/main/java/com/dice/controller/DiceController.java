@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -37,10 +36,9 @@ public class DiceController {
 
     @PostMapping("/roll")
     public ResponseEntity<?> rollDice() {
-        List<Integer> rolledDice = scoringService.rollDice(gameService.prepareDiceForRoll());
-        //  List<Integer> rolledDice = new ArrayList<>(List.of(1, 1, 5, 3, 3, 3));
+        List<Integer> rolledDice = gameService.rollDice(gameService.prepareDiceForRoll());
 
-        broadcastGameState(rolledDice);
+        broadcastGameState();
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
@@ -57,6 +55,10 @@ public class DiceController {
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
             gameService.saveTurnScore(3000);
+            gameService.setCurrentDiceOnTableToZero();
+
+            broadcastGameState();
+
             return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
         }
 
@@ -93,8 +95,8 @@ public class DiceController {
         } else return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
     }
 
-    private void broadcastGameState(List<Integer> rolledDice) {
-        GameState gameState = gameService.createSnapshotRollDice(rolledDice);
+    private void broadcastGameState() {
+        GameState gameState = gameService.createGameStateSnapshot();
         messagingTemplate.convertAndSend("/topic/game-state", gameState);
     }
 }

@@ -34,7 +34,7 @@ async function initializeGame() {
 initializeGame();
 
 function connect() {
-  updateButtonsUI(1)
+  updateButtonsUI(1);
 
   const socket = new SockJS("/ws");
   stompClient = Stomp.over(socket);
@@ -50,7 +50,10 @@ function connect() {
 
       stompClient.subscribe("/topic/player-status", function (statusMessage) {
         const status = JSON.parse(statusMessage.body);
-        updatePlayerStatusUI(status.isPlayer1Connected, status.isPlayer2Connected);
+        updatePlayerStatusUI(
+          status.isPlayer1Connected,
+          status.isPlayer2Connected,
+        );
       });
 
       stompClient.subscribe("/topic/game-state", function (message) {
@@ -58,13 +61,25 @@ function connect() {
         console.log("Nový stav hry ze serveru:", gameState);
 
         if (currentActivePlayerId !== gameState.activePlayerId) {
-            currentActivePlayerId = gameState.activePlayerId;
-            updateButtonsUI(gameState.activePlayerId);
+          currentActivePlayerId = gameState.activePlayerId;
+          updateButtonsUI(gameState.activePlayerId);
         }
 
-        if (gameState.rolledDice && gameState.rolledDice.length > 0 && myPlayerId !== gameState.activePlayerId) {
-            renderDice(gameState.rolledDice, false, false); 
-        }
+        if (myPlayerId !== gameState.activePlayerId) {
+          if (gameState.diceOnTable && gameState.diceOnTable.length > 0) {
+            renderDice(gameState.diceOnTable, false, false);
+          } else {
+            diceArea.innerHTML = "";
+          }
+
+          if (gameState.activePlayerId === 1 && gameState.player1) {
+            document.getElementById("actual-score-p1").innerText =
+              gameState.player1.turnScore;
+          } else if (gameState.activePlayerId === 2 && gameState.player2) {
+            document.getElementById("actual-score-p2").innerText =
+              gameState.player2.turnScore;
+          }
+        } 
       });
 
       stompClient.subscribe("/topic/dice-selection", function (message) {
@@ -74,13 +89,13 @@ function connect() {
         const currentDiceElements = diceArea.children;
 
         if (currentDiceElements[selectionData.dieIndex]) {
-            const targetDie = currentDiceElements[selectionData.dieIndex];
-            
-            if (selectionData.isSelected === true) {
-                targetDie.classList.add("selected");
-            } else {
-                targetDie.classList.remove("selected");
-            }
+          const targetDie = currentDiceElements[selectionData.dieIndex];
+
+          if (selectionData.isSelected === true) {
+            targetDie.classList.add("selected");
+          } else {
+            targetDie.classList.remove("selected");
+          }
         }
       });
 

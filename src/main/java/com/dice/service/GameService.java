@@ -5,7 +5,9 @@ import com.dice.dto.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class GameService {
@@ -17,6 +19,28 @@ public class GameService {
     Player player2 = new Player("Milan", 0, 0, 6);
 
     private int activePlayerId = 1;
+    private List<Integer> currentDiceOnTable = new ArrayList<>();
+
+    public List<Integer> rollDice(int amountDice) {
+        Random random = new Random();
+        ArrayList<Integer> diceNumbers = new ArrayList<>();
+
+        for (int i = 1; i <= amountDice; i++) {
+            int number = random.nextInt(6) + 1;
+            diceNumbers.add(number);
+        }
+
+        // TESTING ROLLED DICE
+        //  List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
+        currentDiceOnTable.clear();
+        currentDiceOnTable.addAll(diceNumbers);
+
+        return diceNumbers;
+    }
+
+    public void setCurrentDiceOnTableToZero() {
+        currentDiceOnTable.clear();
+    }
 
     public void switchPlayer() {
         if (activePlayerId == 1) {
@@ -94,9 +118,8 @@ public class GameService {
     ////////////////////////////////////////////////////////////
                     // WEBSOCKET //
 
-    public GameState createSnapshotRollDice(List<Integer> rolledDice) {
-        return new GameState(player1, player2, rolledDice, activePlayerId);
+    public GameState createGameStateSnapshot() {
+        return new GameState(player1, player2, currentDiceOnTable, activePlayerId);
     }
 
 }
-

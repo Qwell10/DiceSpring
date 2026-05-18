@@ -67,7 +67,7 @@ function connect() {
 
         if (myPlayerId !== gameState.activePlayerId) {
           if (gameState.diceOnTable && gameState.diceOnTable.length > 0) {
-            renderDice(gameState.diceOnTable, false, false);
+            renderDice(gameState.diceOnTable, false, false, gameState.isNewRoll);
           } else {
             diceArea.innerHTML = "";
           }
@@ -175,17 +175,19 @@ function updateButtonsUI(activePlayerId) {
 }
 
 
-function renderDice(diceValues, isBust, allowSelection) {
+function renderDice(diceValues, isBust, allowSelection, animate = true) {
   diceArea.innerHTML = "";
   const diceElements = [];
 
   for (let i = 0; i < diceValues.length; i++) {
     const die = document.createElement("div");
-    die.className = "die rolling";
-    die.innerText = "?";
+    die.className = animate ? "die rolling" : "die";
+    die.innerText = animate ? "?" : diceValues[i];
     diceArea.appendChild(die);
     diceElements.push(die);
   }
+
+  const timeoutMs = animate ? 600 : 0;
 
   setTimeout(() => {
     diceElements.forEach((die, index) => {

@@ -38,7 +38,7 @@ public class DiceController {
     public ResponseEntity<?> rollDice() {
         List<Integer> rolledDice = gameService.rollDice(gameService.prepareDiceForRoll());
 
-        broadcastGameState();
+        broadcastGameState(true);
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
@@ -57,7 +57,7 @@ public class DiceController {
             gameService.saveTurnScore(3000);
             gameService.setCurrentDiceOnTableToZero();
 
-            broadcastGameState();
+            broadcastGameState(false);
 
             return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
         }
@@ -65,12 +65,23 @@ public class DiceController {
         if (scoringService.isSmallStraight(pickedDice)) {
             if (scoringService.containsOnes(pickedDice)) {
                 gameService.saveTurnScore(1600);
+                gameService.setCurrentDiceOnTableToZero();
+
+                broadcastGameState(false);
+
                 return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
             } else if (scoringService.containsFives(pickedDice)) {
                 gameService.saveTurnScore(1550);
+                gameService.setCurrentDiceOnTableToZero();
+
+                broadcastGameState(false);
+
+                //todo()
                 return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
             } else {
                 gameService.saveTurnScore(1500);
+                broadcastGameState(false);
+
                 return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
             }
         }
@@ -95,8 +106,8 @@ public class DiceController {
         } else return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
     }
 
-    private void broadcastGameState() {
-        GameState gameState = gameService.createGameStateSnapshot();
+    private void broadcastGameState(boolean isNewRoll) {
+        GameState gameState = gameService.createGameStateSnapshot(isNewRoll);
         messagingTemplate.convertAndSend("/topic/game-state", gameState);
     }
 }

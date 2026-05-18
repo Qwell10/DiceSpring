@@ -22,6 +22,7 @@ public class GameService {
     private List<Integer> currentDiceOnTable = new ArrayList<>();
 
     public List<Integer> rollDice(int amountDice) {
+/*
         Random random = new Random();
         ArrayList<Integer> diceNumbers = new ArrayList<>();
 
@@ -29,9 +30,11 @@ public class GameService {
             int number = random.nextInt(6) + 1;
             diceNumbers.add(number);
         }
+*/
 
+        //todo - proc zmizely kostky pri full postupce, ale ne pri male postupce + kostka"1" - tzn stejne jako v předchozím casu, hrac vybral vsechny kostky ze stolu
         // TESTING ROLLED DICE
-        //  List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
+          List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6));
         currentDiceOnTable.clear();
         currentDiceOnTable.addAll(diceNumbers);
 
@@ -118,8 +121,8 @@ public class GameService {
     ////////////////////////////////////////////////////////////
                     // WEBSOCKET //
 
-    public GameState createGameStateSnapshot() {
-        return new GameState(player1, player2, currentDiceOnTable, activePlayerId);
+    public GameState createGameStateSnapshot(boolean isNewRoll) {
+        return new GameState(player1, player2, currentDiceOnTable, isNewRoll, activePlayerId);
     }
 
 }

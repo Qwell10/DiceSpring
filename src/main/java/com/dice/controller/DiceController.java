@@ -51,6 +51,7 @@ public class DiceController {
         }
     }
 
+    //todo - vybral jsem kostky 1-5 ... zůstala poslední kostka na stole, a tu když jsem u aktivního hráče označil, tak se mi u diváka neoznačila
     @PostMapping("/score")
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
@@ -76,10 +77,11 @@ public class DiceController {
 
                 broadcastGameState(false);
 
-                //todo()
                 return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
             } else {
                 gameService.saveTurnScore(1500);
+                gameService.removePickedDiceFromTable(pickedDice);
+
                 broadcastGameState(false);
 
                 return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));

@@ -49,6 +49,10 @@ public class GameService {
         }
     }
 
+    public List<Integer> getCurrentDiceOnTable() {
+        return currentDiceOnTable;
+    }
+
     public void switchPlayer() {
         if (activePlayerId == 1) {
             activePlayerId = 2;

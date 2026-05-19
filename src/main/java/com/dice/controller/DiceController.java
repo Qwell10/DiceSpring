@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -51,7 +52,7 @@ public class DiceController {
         }
     }
 
-    //todo - vybral jsem kostky 1-5 ... zůstala poslední kostka na stole, a tu když jsem u aktivního hráče označil, tak se mi u diváka neoznačila
+    //todo - vyber posledni kostky ze stolu blbne
     @PostMapping("/score")
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
@@ -60,7 +61,7 @@ public class DiceController {
 
             broadcastGameState(false);
 
-            return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+            return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
         }
 
         if (scoringService.isSmallStraight(pickedDice)) {
@@ -70,21 +71,21 @@ public class DiceController {
 
                 broadcastGameState(false);
 
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
             } else if (scoringService.containsFives(pickedDice)) {
                 gameService.saveTurnScore(1550);
                 gameService.setCurrentDiceOnTableToZero();
 
                 broadcastGameState(false);
 
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
             } else {
                 gameService.saveTurnScore(1500);
                 gameService.removePickedDiceFromTable(pickedDice);
 
                 broadcastGameState(false);
 
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), gameService.getCurrentDiceOnTable(), null));
             }
         }
 
@@ -96,7 +97,9 @@ public class DiceController {
         gameService.saveTurnScore(turnScore);
         gameService.setActivePlayerRemainingDice(pickedDice);
 
-        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+        broadcastGameState(false);
+
+        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), gameService.getCurrentDiceOnTable(), null));
     }
 
     @PostMapping("/endTurn")

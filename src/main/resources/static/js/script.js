@@ -297,7 +297,7 @@ scoreBtn.addEventListener("click", () => {
         return data;
       });
     })
-    .then((turnStatus) => {
+    .then((data) => {
       const isPlayer1Active = document
         .getElementById("player1-card")
         .classList.contains("active");
@@ -305,13 +305,13 @@ scoreBtn.addEventListener("click", () => {
         ? "actual-score-p1"
         : "actual-score-p2";
 
-      document.getElementById(targetSpanId).innerText = turnStatus.turnScore;
+      document.getElementById(targetSpanId).innerText = data.turnScore;
 
       scoreBtn.disabled = true;
       rollBtn.disabled = false;
       endTurnBtn.disabled = false;
 
-      selectedElements.forEach((die) => die.remove());
+     renderDice(data.diceOnTable, false, true, false)
     })
     .catch((error) => {
       console.error("Chyba: ", error);

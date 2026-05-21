@@ -56,31 +56,36 @@ function connect() {
         );
       });
 
-      stompClient.subscribe("/topic/game-state", function (message) {
-        const gameState = JSON.parse(message.body);
-        console.log("Nový stav hry ze serveru:", gameState);
+stompClient.subscribe("/topic/game-state", function (message) {
+  const gameState = JSON.parse(message.body);
+  console.log("Nový stav hry ze serveru:", gameState);
 
-        if (currentActivePlayerId !== gameState.activePlayerId) {
-          currentActivePlayerId = gameState.activePlayerId;
-          updateButtonsUI(gameState.activePlayerId);
-        }
+  if (currentActivePlayerId !== gameState.activePlayerId) {
+    currentActivePlayerId = gameState.activePlayerId;
+    updateButtonsUI(gameState.activePlayerId);
 
-        if (myPlayerId !== gameState.activePlayerId) {
-          if (gameState.diceOnTable && gameState.diceOnTable.length > 0) {
-            renderDice(gameState.diceOnTable, false, false, gameState.isNewRoll);
-          } else {
-            diceArea.innerHTML = "";
-          }
+    setActivePlayerWindow(gameState.activePlayerId);
+  }
 
-          if (gameState.activePlayerId === 1 && gameState.player1) {
-            document.getElementById("actual-score-p1").innerText =
-              gameState.player1.turnScore;
-          } else if (gameState.activePlayerId === 2 && gameState.player2) {
-            document.getElementById("actual-score-p2").innerText =
-              gameState.player2.turnScore;
-          }
-        } 
-      });
+  if (!gameState.diceOnTable || gameState.diceOnTable.length === 0) {
+    diceArea.innerHTML = "";
+  }
+
+  if (gameState.player1) {
+    document.getElementById("score-p1").innerText = gameState.player1.totalScore;
+    document.getElementById("actual-score-p1").innerText = gameState.player1.turnScore;
+  }
+  if (gameState.player2) {
+    document.getElementById("score-p2").innerText = gameState.player2.totalScore;
+    document.getElementById("actual-score-p2").innerText = gameState.player2.turnScore;
+  }
+
+  if (myPlayerId !== gameState.activePlayerId) {
+    if (gameState.diceOnTable && gameState.diceOnTable.length > 0) {
+      renderDice(gameState.diceOnTable, false, false, gameState.isNewRoll);
+    }
+  }
+});
 
       stompClient.subscribe("/topic/dice-selection", function (message) {
         const selectionData = JSON.parse(message.body);
@@ -109,7 +114,7 @@ function connect() {
           );
         })
         .catch((error) =>
-          console.error("❌ Chyba při načítání úvodního stavu:", error),
+          console.error("❌ Chyba při načítání úvodního stavu:", error),f
         );
     },
     function (error) {
@@ -118,12 +123,17 @@ function connect() {
   );
 }
 
-function switchActivePlayerUI() {
-  const player1Box = document.getElementById("player1-card");
-  const player2Box = document.getElementById("player2-card");
+function setActivePlayerWindow(activeId) {
+  const p1Card = document.getElementById("player1-card");
+  const p2Card = document.getElementById("player2-card");
 
-  player1Box.classList.toggle("active");
-  player2Box.classList.toggle("active");
+  if (activeId === 1) {
+    p1Card.classList.add("active");
+    p2Card.classList.remove("active");
+  } else {
+    p1Card.classList.remove("active");
+    p2Card.classList.add("active");
+  }
 }
 
 function updatePlayerStatusUI(p1Connected, p2Connected) {
@@ -251,6 +261,7 @@ rollBtn.addEventListener("click", () => {
       renderDice(data.dice, data.isBust, true);
 
       if (data.isBust === true) {
+        
         setTimeout(() => {
           showMessage(data.message, true);
           document.getElementById("actual-score-p1").innerText = "0";
@@ -259,7 +270,10 @@ rollBtn.addEventListener("click", () => {
 
         setTimeout(() => {
           diceArea.innerHTML = "";
-          switchActivePlayerUI();
+          
+          fetch("/api/dice/endTurn", { method: "POST" })
+            .catch(error => console.error("Chyba při automatickém ukončení tahu po Bustu:", error));
+            
         }, 3600);
       }
     })
@@ -327,28 +341,18 @@ endTurnBtn.addEventListener("click", () => {
 
   fetch("/api/dice/endTurn", { method: "POST" })
     .then((response) => {
-      if (!response.ok) throw new Error("!response.ok in endTurn");
+      if (!response.ok) throw new Error("Chyba při ukončování tahu.");
       return response.json();
     })
     .then((data) => {
-      const isPlayer1Active = document
-        .getElementById("player1-card")
-        .classList.contains("active");
-      const totalScoreSpanId = isPlayer1Active ? "score-p1" : "score-p2";
-
-      document.getElementById(totalScoreSpanId).innerText = data.totalScore;
-      document.getElementById("actual-score-p1").innerText = "0";
-      document.getElementById("actual-score-p2").innerText = "0";
-
       if (data.isWinner === true) {
         if (typeof showMessage === "function") {
           showMessage("🎉 " + data.message + " 🎉", false);
         }
 
-        diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí ${isPlayer1Active ? "Hráč 1" : "Hráč 2"}</h2>`;
-      } else {
-        switchActivePlayerUI();
-      }
+        diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí Hráč ${myPlayerId}</h2>`;
+      } 
+      
     })
     .catch((error) => {
       console.error(error);

@@ -22,7 +22,6 @@ public class GameService {
     private List<Integer> currentDiceOnTable = new ArrayList<>();
 
     public List<Integer> rollDice(int amountDice) {
-/*
         Random random = new Random();
         ArrayList<Integer> diceNumbers = new ArrayList<>();
 
@@ -30,9 +29,8 @@ public class GameService {
             int number = random.nextInt(6) + 1;
             diceNumbers.add(number);
         }
-*/
 
-        List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 1));
+    //    List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 1));
         currentDiceOnTable.clear();
         currentDiceOnTable.addAll(diceNumbers);
 

@@ -52,7 +52,6 @@ public class DiceController {
         }
     }
 
-    //todo - vyber posledni kostky ze stolu blbne
     @PostMapping("/score")
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
@@ -96,6 +95,7 @@ public class DiceController {
         int turnScore = scoringService.calculateScore(pickedDice);
         gameService.saveTurnScore(turnScore);
         gameService.setActivePlayerRemainingDice(pickedDice);
+        gameService.removePickedDiceFromTable(pickedDice);
 
         broadcastGameState(false);
 
@@ -105,6 +105,11 @@ public class DiceController {
     @PostMapping("/endTurn")
     public ResponseEntity<?> endTurn() {
         int totalScore = gameService.endTurn();
+
+        gameService.setActivePlayerRemainingDiceToSix();
+        gameService.setCurrentDiceOnTableToZero();
+
+        broadcastGameState(false);
 
         if (totalScore >= 5000) {
             return ResponseEntity.ok().body(new EndTurnResponse(totalScore, true, "Výhra!"));

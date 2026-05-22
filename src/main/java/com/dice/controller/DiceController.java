@@ -46,7 +46,8 @@ public class DiceController {
         } else {
             gameService.setActivePlayerRemainingDiceToSix();
             gameService.setActivePlayerTurnScore(0);
-            gameService.switchPlayer();
+
+            broadcastGameState(false);
 
             return ResponseEntity.ok().body(new RollResponse(rolledDice, true, "Bust! Nic nepadlo. Hraje druhý hráč."));
         }

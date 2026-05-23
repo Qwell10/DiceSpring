@@ -1,0 +1,11 @@
+package com.dice.dto;
+
+import java.util.List;
+
+public record GameState(
+        Player player1,
+        Player player2,
+        List<Integer> diceOnTable,
+        boolean isNewRoll,
+        int activePlayerId
+) {}

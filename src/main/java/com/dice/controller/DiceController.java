@@ -1,19 +1,19 @@
 package com.dice.controller;
 
-import com.dice.dto.EndTurnResponse;
-import com.dice.dto.ErrorResponse;
-import com.dice.dto.RollResponse;
-import com.dice.dto.TurnStatusResponse;
+import com.dice.dto.*;
 import com.dice.service.GameService;
 import com.dice.service.ScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -26,17 +26,28 @@ public class DiceController {
     @Autowired
     private GameService gameService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @MessageMapping("/game.select-die")
+    @SendTo("/topic/dice-selection")
+    public DieSelectDto broadcastDieSelection(DieSelectDto dto) {
+        return dto;
+    }
+
     @PostMapping("/roll")
     public ResponseEntity<?> rollDice() {
-        List<Integer> rolledDice = scoringService.rollDice(gameService.prepareDiceForRoll());
-        //  List<Integer> rolledDice = new ArrayList<>(List.of(1, 1, 5, 3, 3, 3));
+        List<Integer> rolledDice = gameService.rollDice(gameService.prepareDiceForRoll());
+
+        broadcastGameState(true);
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
         } else {
             gameService.setActivePlayerRemainingDiceToSix();
             gameService.setActivePlayerTurnScore(0);
-            gameService.switchPlayer();
+
+            broadcastGameState(false);
 
             return ResponseEntity.ok().body(new RollResponse(rolledDice, true, "Bust! Nic nepadlo. Hraje druhý hráč."));
         }
@@ -46,19 +57,35 @@ public class DiceController {
     public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
         if (scoringService.isLargeStraight(pickedDice)) {
             gameService.saveTurnScore(3000);
-            return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+            gameService.setCurrentDiceOnTableToZero();
+
+            broadcastGameState(false);
+
+            return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
         }
 
         if (scoringService.isSmallStraight(pickedDice)) {
             if (scoringService.containsOnes(pickedDice)) {
                 gameService.saveTurnScore(1600);
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+                gameService.setCurrentDiceOnTableToZero();
+
+                broadcastGameState(false);
+
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
             } else if (scoringService.containsFives(pickedDice)) {
                 gameService.saveTurnScore(1550);
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+                gameService.setCurrentDiceOnTableToZero();
+
+                broadcastGameState(false);
+
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
             } else {
                 gameService.saveTurnScore(1500);
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+                gameService.removePickedDiceFromTable(pickedDice);
+
+                broadcastGameState(false);
+
+                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), gameService.getCurrentDiceOnTable(), null));
             }
         }
 
@@ -69,16 +96,29 @@ public class DiceController {
         int turnScore = scoringService.calculateScore(pickedDice);
         gameService.saveTurnScore(turnScore);
         gameService.setActivePlayerRemainingDice(pickedDice);
+        gameService.removePickedDiceFromTable(pickedDice);
 
-        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), null));
+        broadcastGameState(false);
+
+        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), gameService.getCurrentDiceOnTable(), null));
     }
 
     @PostMapping("/endTurn")
     public ResponseEntity<?> endTurn() {
         int totalScore = gameService.endTurn();
 
+        gameService.setActivePlayerRemainingDiceToSix();
+        gameService.setCurrentDiceOnTableToZero();
+
+        broadcastGameState(false);
+
         if (totalScore >= 5000) {
             return ResponseEntity.ok().body(new EndTurnResponse(totalScore, true, "Výhra!"));
         } else return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
+    }
+
+    private void broadcastGameState(boolean isNewRoll) {
+        GameState gameState = gameService.createGameStateSnapshot(isNewRoll);
+        messagingTemplate.convertAndSend("/topic/game-state", gameState);
     }
 }

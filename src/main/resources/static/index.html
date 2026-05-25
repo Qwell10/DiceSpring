@@ -9,36 +9,59 @@
 </head>
 
 <body>
-<div id="gameMessage"></div>
 
-<div id="scoreboard" class="scoreboard">
-    <div id="player1-card" class="player-card active">
-        <h4 class="player-name">Hráč 1</h4>
-        <h3 class="player-score">Celkové Score: <span id="score-p1">0</span></h3>
-        <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p1">0</span></h2>
-        <div class="status-wrapper">
-            <span id="dot-p1" class="status-dot offline"></span>
-            <small id="status-p1" class="status-text-offline">Čeká se na připojení...</small>
-        </div>
-    </div>
+<div id="lobby-screen">
+    <div class="lobby-container">
+        <h1>🎲 Kostky 🎲</h1>
 
-    <div id="player2-card" class="player-card">
-        <h4 class="player-name">Hráč 2</h4>
-        <h3 class="player-score">Celkové Score: <span id="score-p2">0</span></h3>
-        <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p2">0</span></h2>
-        <div class="status-wrapper">
-            <span id="dot-p2" class="status-dot offline"></span>
-            <small id="status-p2" class="status-text-offline">Čeká se na připojení...</small>
+        <div class="lobby-actions">
+            <button id="create-room-btn" class="primary-btn">Vytvořit novou hru</button>
+
+            <div class="join-group">
+                <input type="text" id="room-code-input" placeholder="Zadej kód (např. ABC9)">
+                <button id="join-room-btn">Připojit se</button>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="diceArea" class="dice-container"></div>
+<div id="game-screen" style="display: none;">
 
-<div class="button-container">
-    <button id="rollBtn">Hodit kostkama</button>
-    <button id="scoreBtn" disabled>Vybrat kostky</button>
-    <button id="endTurnBtn" disabled>Zapsat body a ukončit</button>
+    <div class="room-header">
+        <h3>Kód místnosti: <span id="display-room-code">---</span></h3>
+    </div>
+
+    <div id="gameMessage"></div>
+
+    <div id="scoreboard" class="scoreboard">
+        <div id="player1-card" class="player-card active">
+            <h4 class="player-name">Hráč 1</h4>
+            <h3 class="player-score">Celkové Score: <span id="score-p1">0</span></h3>
+            <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p1">0</span></h2>
+            <div class="status-wrapper">
+                <span id="dot-p1" class="status-dot offline"></span>
+                <small id="status-p1" class="status-text-offline">Čeká se na připojení...</small>
+            </div>
+        </div>
+
+        <div id="player2-card" class="player-card">
+            <h4 class="player-name">Hráč 2</h4>
+            <h3 class="player-score">Celkové Score: <span id="score-p2">0</span></h3>
+            <h2 class="player-actual-score">Aktuálně: <span id="actual-score-p2">0</span></h2>
+            <div class="status-wrapper">
+                <span id="dot-p2" class="status-dot offline"></span>
+                <small id="status-p2" class="status-text-offline">Čeká se na připojení...</small>
+            </div>
+        </div>
+    </div>
+
+    <div id="diceArea" class="dice-container"></div>
+
+    <div class="button-container">
+        <button id="rollBtn">Hodit kostkama</button>
+        <button id="scoreBtn" disabled>Vybrat kostky</button>
+        <button id="endTurnBtn" disabled>Zapsat body a ukončit</button>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>

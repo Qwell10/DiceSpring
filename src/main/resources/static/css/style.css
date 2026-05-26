@@ -128,6 +128,27 @@ h1 {
 }
 /* ============================================================================= */
 
+
+
+/* ==================== HERNÍ OBRAZOVKA ==================== */
+#game-screen {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pojistka pro samotné kontejnery kostek a tlačítek, aby držely střed */
+.dice-container,
+.button-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+/* ============================================================================= */
+
+
+
 .scoreboard {
     position: absolute;
     top: 20px;

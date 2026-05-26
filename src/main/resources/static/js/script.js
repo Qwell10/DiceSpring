@@ -262,7 +262,7 @@ document.getElementById("create-room-btn").addEventListener("click", async () =>
         document.getElementById("lobby-screen").style.display = "none";
 
         // 3. Ukážeme herní stůl
-        document.getElementById("game-screen").style.display = "block";
+        document.getElementById("game-screen").style.display = "flex";
 
         console.log("Stůl vytvořen, čekám na Hráče 2 s kódem:", simulatedRoomCode);
 

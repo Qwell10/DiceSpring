@@ -249,6 +249,58 @@ function showMessage(text, isError) {
   }, 3500);
 }
 
+document.getElementById("create-room-btn").addEventListener("click", async () => {
+    try {
+        // Zde v budoucnu zavoláš svůj backend: fetch('/api/dice/create-room')
+        // Pro teď si kód nasimulujeme, abychom viděli ten přechod:
+        const simulatedRoomCode = "X9";
+
+        // 1. Vepíšeme kód místnosti do připraveného místa v hlavičce
+        document.getElementById("display-room-code").innerText = simulatedRoomCode;
+
+        // 2. Schováme Lobby
+        document.getElementById("lobby-screen").style.display = "none";
+
+        // 3. Ukážeme herní stůl
+        document.getElementById("game-screen").style.display = "block";
+
+        console.log("Stůl vytvořen, čekám na Hráče 2 s kódem:", simulatedRoomCode);
+
+        // Tady pak v budoucnu spustíš připojení k WebSocketu: connect(simulatedRoomCode);
+
+    } catch (error) {
+        console.error("Chyba při vytváření místnosti:", error);
+    }
+});
+
+// Tlačítko pro připojení k existující hře
+document.getElementById("join-room-btn").addEventListener("click", async () => {
+    // 1. Přečteme si, co hráč napsal do políčka.
+    const inputCode = document.getElementById("room-code-input").value.trim().toUpperCase();
+
+    // Pokud políčko nechal prázdné a klikl
+    if (inputCode === "") {
+        alert("Zadej kód místnosti!");
+        return;
+    }
+
+    // 2. Tady se budeme v budoucnu ptát backendu, jestli kód platí.
+    // Teď jen pro FE testování
+    if (inputCode === "X9") {
+
+        // Přechod - stejný jako u Hráče 1
+        document.getElementById("display-room-code").innerText = inputCode;
+        document.getElementById("lobby-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
+
+        console.log("Úspěšně připojeno jako Hráč 2 ke stolu:", inputCode);
+
+    } else {
+        // Pokud zadá cokoliv jiného
+        alert("Tato místnost neexistuje!");
+    }
+});
+
 rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;
   scoreBtn.disabled = true;

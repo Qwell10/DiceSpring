@@ -97,6 +97,37 @@ h1 {
     transform: translateY(1px);
 }
 
+/* ==================== HLAVIČKA MÍSTNOSTI NAD STOLEM ==================== */
+.room-header {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 30px;
+    border-radius: 15px;
+    border: 2px solid #ffca28;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.room-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #fff;
+    font-weight: normal;
+}
+
+/* Samotný kód místnosti (např. XYZ9) */
+#display-room-code {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #ffca28;
+    letter-spacing: 3px;
+    margin-left: 10px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+/* ============================================================================= */
+
 .scoreboard {
     position: absolute;
     top: 20px;

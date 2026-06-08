@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Player {
+    String id;
     String name;
     int totalScore;
     int turnScore;

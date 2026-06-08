@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-//todo()
 public class RoomsManager {
 
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

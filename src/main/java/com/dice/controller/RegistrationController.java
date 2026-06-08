@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+//todo - nebude potreba kvuli RoomsController
+
 @RestController
 @RequestMapping("/api/dice")
 public class RegistrationController {

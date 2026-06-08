@@ -4,34 +4,42 @@ const rollBtn = document.getElementById("rollBtn");
 const scoreBtn = document.getElementById("scoreBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
 
-let myPlayerId = 0;
+let myPlayerId = null;
+let currentRoomCode = null;
 let myRole = "";
 let stompClient = null;
 let currentActivePlayerId = 1;
 
-async function initializeGame() {
+async function createRoomAction() {
     try {
-        console.log("Odesílám žádost o registraci...");
+        console.log("Odesílám žádost o založení místnosti...");
 
-        const response = await fetch("/api/dice/join", {
+        const response = await fetch("/api/dice/create-room", {
             method: "POST"
         });
 
+        if (!response.ok) throw new Error("Nepodařilo se vytvořit místnost");
+
         const data = await response.json();
 
-        myPlayerId = data.id;
-        myRole = data.role;
+        myPlayerId = data.playerId;
+        currentRoomCode = data.roomCode;
+        myRole = "Hráč 1"; 
 
-        console.log(`Úspěšně zaregistrován! Moje ID: ${myPlayerId}, Role: ${myRole}`);
+        console.log(`Místnost vytvořena! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
 
+        // ZDE SI VLOŽ KÓD PRO ZOBRAZENÍ KÓDU MÍSTNOSTI V UI (např. v hlavičce)
+        // document.getElementById("display-room-code").innerText = currentRoomCode;
+
+        // Teprve teď se jdeme připojit na WebSockety!
         connect();
 
     } catch (error) {
-        console.error("Chyba při registraci hráče:", error);
+        console.error("Chyba při vytváření místnosti:", error);
     }
 }
 
-initializeGame();
+
 
 function connect() {
   updateButtonsUI(1);
@@ -48,7 +56,7 @@ function connect() {
     function (frame) {
       console.log("✅ WebSocket připojen: " + frame);
 
-      stompClient.subscribe("/topic/player-status", function (statusMessage) {
+      stompClient.subscribe("/topic/player-status/" + currentRoomCode, function (statusMessage) {
         const status = JSON.parse(statusMessage.body);
         updatePlayerStatusUI(
           status.isPlayer1Connected,
@@ -56,7 +64,7 @@ function connect() {
         );
       });
 
-stompClient.subscribe("/topic/game-state", function (message) {
+stompClient.subscribe("/topic/game-state/" + currentRoomCode, function (message) {
   const gameState = JSON.parse(message.body);
   console.log("Nový stav hry ze serveru:", gameState);
 
@@ -87,7 +95,7 @@ stompClient.subscribe("/topic/game-state", function (message) {
   }
 });
 
-      stompClient.subscribe("/topic/dice-selection", function (message) {
+     stompClient.subscribe("/topic/dice-selection/" + currentRoomCode, function (message) {
         const selectionData = JSON.parse(message.body);
         console.log("Změna výběru kostky ze serveru:", selectionData);
 
@@ -275,32 +283,47 @@ document.getElementById("create-room-btn").addEventListener("click", async () =>
 
 // Tlačítko pro připojení k existující hře
 document.getElementById("join-room-btn").addEventListener("click", async () => {
-    // 1. Přečteme si, co hráč napsal do políčka.
     const inputCode = document.getElementById("room-code-input").value.trim().toUpperCase();
 
-    // Pokud políčko nechal prázdné a klikl
     if (inputCode === "") {
         alert("Zadej kód místnosti!");
         return;
     }
 
-    // 2. Tady se budeme v budoucnu ptát backendu, jestli kód platí.
-    // Teď jen pro FE testování
-    if (inputCode === "X9") {
+    try {
+        // Voláme Java Controller
+        const response = await fetch(`/api/dice/join-room/${inputCode}`, {
+            method: "POST"
+        });
 
-        // Přechod - stejný jako u Hráče 1
-        document.getElementById("display-room-code").innerText = inputCode;
+        if (!response.ok) {
+            // Pokud Java pošle 400 Bad Request (špatný kód)
+            const errorText = await response.text();
+            alert("Chyba: " + errorText);
+            return;
+        }
+
+        const data = await response.json();
+
+        // Uložíme si data, co nám Java poslala v RoomResponse
+        myPlayerId = data.playerId;
+        currentRoomCode = data.roomCode;
+        myRole = "Hráč 2"; 
+
+        // Přepneme obrazovku (Lobby -> Stůl)
+        document.getElementById("display-room-code").innerText = currentRoomCode;
         document.getElementById("lobby-screen").style.display = "none";
-        document.getElementById("game-screen").style.display = "block";
+        document.getElementById("game-screen").style.display = "flex"; 
 
-        console.log("Úspěšně připojeno jako Hráč 2 ke stolu:", inputCode);
+        console.log(`Úspěšně připojeno! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
 
-    } else {
-        // Pokud zadá cokoliv jiného
-        alert("Tato místnost neexistuje!");
+        // Spustíme WebSockety!
+        connect();
+
+    } catch (error) {
+        console.error("Kritická chyba při připojování:", error);
     }
 });
-
 rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;
   scoreBtn.disabled = true;

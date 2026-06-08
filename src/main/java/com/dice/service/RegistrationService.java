@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+//todo - nebude potreba kvuli RoomsController
+
 @Service
 public class RegistrationService {
 

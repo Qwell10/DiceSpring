@@ -19,9 +19,12 @@ public class GameService {
     @Autowired
     private RoomsManager roomsManager;
 
-    private int activePlayerId = 1;
+
+    //  private int activePlayerId = 1;
+
     @Getter
     private List<Integer> currentDiceOnTable = new ArrayList<>();
+
 
     public List<Integer> rollDice(int amountDice) {
         Random random = new Random();
@@ -32,7 +35,6 @@ public class GameService {
             diceNumbers.add(number);
         }
 
-    //    List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 1));
         currentDiceOnTable.clear();
         currentDiceOnTable.addAll(diceNumbers);
 
@@ -81,6 +83,7 @@ public class GameService {
     }
 */
 
+/*
     public void setActivePlayerRemainingDiceToSix() {
         if (activePlayerId == 1) {
             player1.setRemainingDice(6);
@@ -133,12 +136,10 @@ public class GameService {
 
         return totalScore;
     }
-                       // REST //
-    ////////////////////////////////////////////////////////////
-                    // WEBSOCKET //
 
     public GameState createGameStateSnapshot(boolean isNewRoll) {
         return new GameState(player1, player2, currentDiceOnTable, isNewRoll, activePlayerId);
     }
+*/
 
 }

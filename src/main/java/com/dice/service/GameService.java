@@ -2,6 +2,7 @@ package com.dice.service;
 
 import com.dice.dto.GameState;
 import com.dice.dto.Player;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +16,11 @@ public class GameService {
     @Autowired
     private ScoringService scoringService;
 
-    Player player1 = new Player("Jarda", 0, 0, 6);
-    Player player2 = new Player("Milan", 0, 0, 6);
+    @Autowired
+    private RoomsManager roomsManager;
 
     private int activePlayerId = 1;
+    @Getter
     private List<Integer> currentDiceOnTable = new ArrayList<>();
 
     public List<Integer> rollDice(int amountDice) {
@@ -47,16 +49,23 @@ public class GameService {
         }
     }
 
-    public List<Integer> getCurrentDiceOnTable() {
-        return currentDiceOnTable;
-    }
-
     public void switchPlayer() {
         if (activePlayerId == 1) {
             activePlayerId = 2;
         } else activePlayerId = 1;
     }
 
+    public int getActivePlayerRemainingDice(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+
+        Player p1 = table.player1();
+        Player p2 = table.player2();
+
+        if ()
+
+    }
+
+/*
     public int prepareDiceForRoll() {
         if (activePlayerId == 1) {
             if (player1.getRemainingDice() == 0) {
@@ -70,6 +79,7 @@ public class GameService {
             return player2.getRemainingDice();
         }
     }
+*/
 
     public void setActivePlayerRemainingDiceToSix() {
         if (activePlayerId == 1) {

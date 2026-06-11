@@ -37,7 +37,7 @@ public class DiceController {
 
     @PostMapping("/roll")
     public ResponseEntity<?> rollDice() {
-        List<Integer> rolledDice = gameService.rollDice(gameService.prepareDiceForRoll());
+        List<Integer> rolledDice = gameService.rollDice(gameService.getActivePlayerRemainingDice());
 
         broadcastGameState(true);
 

@@ -23,7 +23,7 @@ public class GameService {
     //  private int activePlayerId = 1;
 
     @Getter
-    private List<Integer> currentDiceOnTable = new ArrayList<>();
+    private final List<Integer> currentDiceOnTable = new ArrayList<>();
 
 
     public List<Integer> rollDice(int amountDice) {

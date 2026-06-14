@@ -59,12 +59,23 @@ public class GameService {
 
     public int getActivePlayerRemainingDice(String roomCode) {
         GameState table = roomsManager.getRoomState(roomCode);
+        String activeId = table.activePlayerId();
 
-        Player p1 = table.player1();
-        Player p2 = table.player2();
+        Player activePlayer = null;
+        if (activeId.equals(table.player1().getId())) {
+            activePlayer = table.player1();
+        } else if (table.player2() != null && activeId.equals(table.player2().getId())) {
+            activePlayer = table.player2();
+        }
 
-        if ()
+        if (activePlayer != null) {
+            if (activePlayer.getRemainingDice() == 0) {
+                activePlayer.setRemainingDice(6);
+            }
+            return activePlayer.getRemainingDice();
+        }
 
+        throw new IllegalStateException("Chyba: Aktivní hráč nebyl u stolu nalezen! (WTF?)");
     }
 
 /*

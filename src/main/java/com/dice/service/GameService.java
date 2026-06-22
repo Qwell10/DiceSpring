@@ -20,8 +20,6 @@ public class GameService {
     private RoomsManager roomsManager;
 
 
-    //  private int activePlayerId = 1;
-
     @Getter
     private final List<Integer> currentDiceOnTable = new ArrayList<>();
 
@@ -51,21 +49,40 @@ public class GameService {
         }
     }
 
-    public void switchPlayer() {
-        if (activePlayerId == 1) {
-            activePlayerId = 2;
-        } else activePlayerId = 1;
+    public void switchPlayer(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+        Player p1 = table.getPlayer1();
+        Player p2 = table.getPlayer2();
+
+        if (table.isPlayer1Active()) {
+            table.setActivePlayerId(p2.getId());
+        } else table.setActivePlayerId(p1.getId());
     }
 
+
+    //todo - getActivePlayerRemainingDice - metoda nize zakomentovana - tu jsem pouzil v predchozi fazi hry
     public int getActivePlayerRemainingDice(String roomCode) {
         GameState table = roomsManager.getRoomState(roomCode);
-        String activeId = table.activePlayerId();
 
+        if (table.isPlayer1Active()) {
+            Player player1 = table.getPlayer1();
+            if(player1.getRemainingDice() == 0) {
+
+            }
+        }
+
+    }
+
+  /*  public int getActivePlayerRemainingDice(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+
+        String activeId = table.getActivePlayerId();
         Player activePlayer = null;
-        if (activeId.equals(table.player1().getId())) {
-            activePlayer = table.player1();
-        } else if (table.player2() != null && activeId.equals(table.player2().getId())) {
-            activePlayer = table.player2();
+
+        if (activeId.equals(table.getPlayer1().getId())) {
+            activePlayer = table.getPlayer1();
+        } else if (table.getPlayer2() != null && activeId.equals(table.getPlayer2().getId())) {
+            activePlayer = table.getPlayer2();
         }
 
         if (activePlayer != null) {
@@ -76,7 +93,7 @@ public class GameService {
         }
 
         throw new IllegalStateException("Chyba: Aktivní hráč nebyl u stolu nalezen! (WTF?)");
-    }
+    }*/
 
 /*
     public int prepareDiceForRoll() {

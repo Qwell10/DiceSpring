@@ -1,11 +1,32 @@
 package com.dice.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.List;
 
-public record GameState(
-        Player player1,
-        Player player2,
-        List<Integer> diceOnTable,
-        boolean isNewRoll,
-        String activePlayerId
-) {}
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class GameState {
+
+    private Player player1;
+    private Player player2;
+    private List<Integer> diceOnTable;
+    private boolean isNewRoll;
+    private String activePlayerId;
+
+    public boolean isPlayer1Active() {
+        return activePlayerId != null && player1 != null && activePlayerId.equals(player1.getId());
+    }
+
+    public boolean isPlayer2Active() {
+        return activePlayerId != null && player2 != null && activePlayerId.equals(player2.getId());
+    }
+
+}

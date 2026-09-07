@@ -29,4 +29,9 @@ public class GameState {
         return activePlayerId != null && player2 != null && activePlayerId.equals(player2.getId());
     }
 
+    public Player getActivePlayer() {
+        if (activePlayerId.equals(player1.getId())) {
+            return player1;
+        } else return player2;
+    }
 }

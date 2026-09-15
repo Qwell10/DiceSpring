@@ -18,13 +18,12 @@ public class WebSocketEventListener {
     public void handleConnect(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String playerIdStr = accessor.getFirstNativeHeader("playerId");
+        String playerId = accessor.getFirstNativeHeader("playerId");
+        String roomCode = accessor.getFirstNativeHeader("roomCode");
         String sessionId = accessor.getSessionId();
 
-        if (playerIdStr != null) {
-            int playerId = Integer.parseInt(playerIdStr);
-
-            registrationService.registerSession(sessionId, playerId);
+        if (playerId != null && roomCode != null) {
+            registrationService.registerSession(sessionId, playerId, roomCode);
 
             System.out.println("✅ Connected: Session " + sessionId + " -> Player " + playerId);
         }
@@ -38,5 +37,4 @@ public class WebSocketEventListener {
 
         System.out.println("❌ Disconnected: Session " + sessionId);
     }
-
 }

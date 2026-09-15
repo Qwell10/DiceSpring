@@ -16,55 +16,42 @@ public class RegistrationService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    private final Map<String, Integer> sessionToPlayerMap = new ConcurrentHashMap<>();
+    private final Map<String, SessionData> sessionToPlayerMap = new ConcurrentHashMap<>();
 
-    private boolean isPlayer1Connected = false;
-    private boolean isPlayer2Connected = false;
-
-    // SYNCHRONIZED zajistí to, že do metody může vstoupit jen jedno vlákno
-    // Nestane se to, že by se ve stejnou chvíli připojili 2 hráči a oboum se přiřadí id 1
-    public synchronized int assignId() {
-        if (!isPlayer1Connected) {
-            isPlayer1Connected = true;
-            return 1;
-
-        } else if (!isPlayer2Connected) {
-            isPlayer2Connected = true;
-            return 2;
-        } else return 0;
+    public void registerSession(String sessionId, String playerId, String roomCode) {
+        sessionToPlayerMap.put(sessionId, new SessionData(playerId, roomCode));
+        System.out.println("Připojen hráč " + playerId + " do místnosti " + roomCode);
     }
 
-    public String assignRole(int id) {
-        return (id == 0) ? "SPECTATOR" : "PLAYER";
-    }
-
-    public void registerSession(String sessionId, int playerId) {
-        sessionToPlayerMap.put(sessionId, playerId);
-        broadcastStatus();
-    }
-
+    //todo 1 - zmenit (pridat odstraneni z konkretniho stolu - podobne jako registerSession)
     public void unregisterSession(String sessionId) {
-        Integer playerId = sessionToPlayerMap.remove(sessionId);
-        if (playerId == null) {
+        SessionData data = sessionToPlayerMap.remove(sessionId);
+
+        if (data == null) {
             return;
         }
-        if (playerId == 1) isPlayer1Connected = false;
-        if (playerId == 2) isPlayer2Connected = false;
 
-        broadcastStatus();
+        String disconnectedPlayerId = data.playerId;
+        String roomCode = data.roomCode;
+
+        System.out.println("Odpojil se hráč " + disconnectedPlayerId + " z místnosti " + roomCode);
     }
 
+    //todo 2 - zmena - bude aktualni pro konkretni stoly
     public void broadcastStatus() {
-        PlayerStatus playerStatus = new PlayerStatus(isPlayer1Connected, isPlayer2Connected);
-        messagingTemplate.convertAndSend("/topic/player-status", playerStatus);
+        // Takto to vypadalo pro globalni jeden stul (zadny jiny neexistoval)
+      //  PlayerStatus playerStatus = new PlayerStatus(isPlayer1Connected, isPlayer2Connected);
+      //  messagingTemplate.convertAndSend("/topic/player-status", playerStatus);
     }
 
-    public boolean isPlayer1Connected() {
-        return this.isPlayer1Connected;
-    }
+    static class SessionData {
+        String playerId;
+        String roomCode;
 
-    public boolean isPlayer2Connected() {
-        return this.isPlayer2Connected;
+        public SessionData(String playerId, String roomCode) {
+            this.playerId = playerId;
+            this.roomCode = roomCode;
+        }
     }
 
 }

@@ -28,17 +28,18 @@ async function createRoomAction() {
 
         console.log(`Místnost vytvořena! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
 
-        // ZDE SI VLOŽ KÓD PRO ZOBRAZENÍ KÓDU MÍSTNOSTI V UI (např. v hlavičce)
-        // document.getElementById("display-room-code").innerText = currentRoomCode;
+        document.getElementById("display-room-code").innerText = currentRoomCode;
+        document.getElementById("lobby-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "flex";
 
-        // Teprve teď se jdeme připojit na WebSockety!
+        updatePlayerStatusUI(true, false);
+
         connect();
 
     } catch (error) {
         console.error("Chyba při vytváření místnosti:", error);
     }
 }
-
 
 
 function connect() {
@@ -48,8 +49,9 @@ function connect() {
   stompClient = Stomp.over(socket);
 
   const headers = {
-    playerId: myPlayerId,
-  };
+     playerId: myPlayerId,
+     roomCode: currentRoomCode
+   };
 
   stompClient.connect(
     headers,
@@ -257,28 +259,8 @@ function showMessage(text, isError) {
   }, 3500);
 }
 
-document.getElementById("create-room-btn").addEventListener("click", async () => {
-    try {
-        // Zde v budoucnu zavoláš svůj backend: fetch('/api/dice/create-room')
-        // Pro teď si kód nasimulujeme, abychom viděli ten přechod:
-        const simulatedRoomCode = "X9";
-
-        // 1. Vepíšeme kód místnosti do připraveného místa v hlavičce
-        document.getElementById("display-room-code").innerText = simulatedRoomCode;
-
-        // 2. Schováme Lobby
-        document.getElementById("lobby-screen").style.display = "none";
-
-        // 3. Ukážeme herní stůl
-        document.getElementById("game-screen").style.display = "flex";
-
-        console.log("Stůl vytvořen, čekám na Hráče 2 s kódem:", simulatedRoomCode);
-
-        // Tady pak v budoucnu spustíš připojení k WebSocketu: connect(simulatedRoomCode);
-
-    } catch (error) {
-        console.error("Chyba při vytváření místnosti:", error);
-    }
+document.getElementById("create-room-btn").addEventListener("click", () => {
+    createRoomAction();
 });
 
 // Tlačítko pro připojení k existující hře

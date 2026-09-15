@@ -59,8 +59,6 @@ public class GameService {
         } else table.setActivePlayerId(p1.getId());
     }
 
-
-    //todo - getActivePlayerRemainingDice - metoda nize zakomentovana - tu jsem pouzil v predchozi fazi hry
     public int getActivePlayerRemainingDice(String roomCode) {
         GameState table = roomsManager.getRoomState(roomCode);
 
@@ -73,40 +71,26 @@ public class GameService {
         return activePlayer.getRemainingDice();
     }
 
-/*
-    public int prepareDiceForRoll() {
-        if (activePlayerId == 1) {
-            if (player1.getRemainingDice() == 0) {
-                player1.setRemainingDice(6);
-            }
-            return player1.getRemainingDice();
-        } else {
-            if (player2.getRemainingDice() == 0) {
-                player2.setRemainingDice(6);
-            }
-            return player2.getRemainingDice();
-        }
-    }
-*/
 
-/*
-    public void setActivePlayerRemainingDiceToSix() {
-        if (activePlayerId == 1) {
-            player1.setRemainingDice(6);
-        } else player2.setRemainingDice(6);
+    public void setActivePlayerRemainingDiceToSix(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+        Player activePlayer = table.getActivePlayer();
 
+        activePlayer.setRemainingDice(6);
     }
 
+    public void setActivePlayerTurnScoreToZero(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+        Player activePlayer = table.getActivePlayer();
+
+        activePlayer.setTurnScore(0);
+    }
+
+/*
     public void setActivePlayerRemainingDice(List<Integer> pickedDice) {
         if (activePlayerId == 1) {
             player1.setRemainingDice(player1.getRemainingDice() - pickedDice.size());
         } else player2.setRemainingDice(player2.getRemainingDice() - pickedDice.size());
-    }
-
-    public void setActivePlayerTurnScore(int turnScore) {
-        if (activePlayerId == 1) {
-            player1.setTurnScore(turnScore);
-        } else player2.setTurnScore(turnScore);
     }
 
     public void saveTurnScore(int turnScore) {

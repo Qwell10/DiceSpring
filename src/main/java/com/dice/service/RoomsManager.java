@@ -2,12 +2,14 @@ package com.dice.service;
 
 import com.dice.dto.GameState;
 import com.dice.dto.Player;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Service
 public class RoomsManager {
 
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

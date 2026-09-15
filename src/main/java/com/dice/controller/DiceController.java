@@ -8,14 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
 
+/*
 @RestController
 @RequestMapping("/api/dice")
 public class DiceController {
@@ -35,17 +33,17 @@ public class DiceController {
         return dto;
     }
 
-    @PostMapping("/roll")
-    public ResponseEntity<?> rollDice() {
-        List<Integer> rolledDice = gameService.rollDice(gameService.getActivePlayerRemainingDice());
+    @PostMapping("/{roomCode}/roll")
+    public ResponseEntity<?> rollDice(@PathVariable String roomCode) {
+        List<Integer> rolledDice = gameService.rollDice(gameService.getActivePlayerRemainingDice(roomCode));
 
         broadcastGameState(true);
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
         } else {
-            gameService.setActivePlayerRemainingDiceToSix();
-            gameService.setActivePlayerTurnScore(0);
+            gameService.setActivePlayerRemainingDiceToSix(roomCode);
+            gameService.setActivePlayerTurnScoreToZero(roomCode);
 
             broadcastGameState(false);
 
@@ -121,4 +119,4 @@ public class DiceController {
         GameState gameState = gameService.createGameStateSnapshot(isNewRoll);
         messagingTemplate.convertAndSend("/topic/game-state", gameState);
     }
-}
+}*/

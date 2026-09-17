@@ -58,4 +58,8 @@ public class RoomsManager {
 
         return newCode;
     }
+
+    //todo3
+    public void playerDisconnected(String roomCode, String disconnectedPlayerId) {
+    }
 }

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+//WEBSOCKET - komunikační protokol, který umožňuje trvalé a obousměrné spojení mezi klientem a serverem
+//HTTP - dotaz-odpověď -- klient se musi zeptat serveru, až potom dostane odpověď
 @Component
 public class WebSocketEventListener {
 

@@ -25,8 +25,8 @@ public class RoomsManager {
                 player1,
                 null,
                 new ArrayList<>(),
-                true,
-                player1.getId()
+                player1.getId(),
+                true
         );
 
         activeRooms.put(roomCode, startingGameState);

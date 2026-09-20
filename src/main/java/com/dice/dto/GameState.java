@@ -22,11 +22,11 @@ public class GameState {
     private boolean isNewRoll;
 
     public boolean isPlayer1Connected() {
-        return activePlayerId != null && player1 != null && activePlayerId.equals(player1.getId());
+        return player1 != null && player1.isConnected();
     }
 
     public boolean isPlayer2Connected() {
-        return activePlayerId != null && player2 != null && activePlayerId.equals(player2.getId());
+        return player2 != null && player2.isConnected();
     }
 
     public Player getActivePlayer() {

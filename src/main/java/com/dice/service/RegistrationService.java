@@ -1,6 +1,7 @@
 package com.dice.service;
 
 import com.dice.dto.GameState;
+import com.dice.dto.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -27,15 +28,33 @@ public class RegistrationService {
         System.out.println("Připojen hráč " + playerId + " do místnosti " + roomCode);
 
         GameState gameState = roomsManager.getRoomState(roomCode);
-        if(gameState != null) {
-            if(gameState.getPlayer1().getId().equals(playerId)) {
 
-            }
+        if (gameState == null) {
+            return;
+        }
+        Player p1 = gameState.getPlayer1();
+        Player p2 = gameState.getPlayer2();
+
+        System.out.println("Hledám ID z hlavičky: " + playerId);
+        if (p1 != null) {
+            System.out.println("ID Hráče 1 u stolu: " + p1.getId());
+        }
+        if (p2 != null) {
+            System.out.println("ID Hráče 2 u stolu: " + p2.getId());
+        } else {
+            System.out.println("POZOR: Hráč 2 u stolu neexistuje (je null)!");
+        }
+
+        if (p1 != null && p1.getId().equals(playerId)) {
+            p1.setConnected(true);
+        } else if (p2 != null && p2.getId().equals(playerId)) {
+            p2.setConnected(true);
         }
 
         broadcastRoomStatus(roomCode);
     }
 
+    //todo
     public void unregisterSession(String sessionId) {
         SessionData data = sessionToPlayerMap.remove(sessionId);
 
@@ -51,7 +70,6 @@ public class RegistrationService {
         roomsManager.playerDisconnected(roomCode, disconnectedPlayerId);
     }
 
-    //todo
     public void broadcastRoomStatus(String roomCode) {
         GameState gameState = roomsManager.getRoomState(roomCode);
         if (gameState == null) {

@@ -28,7 +28,7 @@ public class RoomsController {
     public ResponseEntity<RoomResponse> createRoom() {
         String player1Id = UUID.randomUUID().toString();
 
-        Player player1 = new Player(player1Id, "Player1", 0, 0, 6);
+        Player player1 = new Player(player1Id, "Player1", 0, 0, 6, false);
 
         String roomCode = roomsManager.createNewRoom(player1);
 
@@ -47,7 +47,7 @@ public class RoomsController {
         }
 
         String player2Id = UUID.randomUUID().toString();
-        Player player2 = new Player(player2Id, "Player2", 0, 0, 6);
+        Player player2 = new Player(player2Id, "Player2", 0, 0, 6, false);
 
         table.setPlayer2(player2);
 

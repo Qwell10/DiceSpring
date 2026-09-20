@@ -18,14 +18,14 @@ public class GameState {
     private Player player1;
     private Player player2;
     private List<Integer> diceOnTable;
-    private boolean isNewRoll;
     private String activePlayerId;
+    private boolean isNewRoll;
 
-    public boolean isPlayer1Active() {
+    public boolean isPlayer1Connected() {
         return activePlayerId != null && player1 != null && activePlayerId.equals(player1.getId());
     }
 
-    public boolean isPlayer2Active() {
+    public boolean isPlayer2Connected() {
         return activePlayerId != null && player2 != null && activePlayerId.equals(player2.getId());
     }
 

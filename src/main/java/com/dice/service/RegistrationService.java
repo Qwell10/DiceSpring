@@ -25,6 +25,15 @@ public class RegistrationService {
     public void registerSession(String sessionId, String playerId, String roomCode) {
         sessionToPlayerMap.put(sessionId, new SessionData(playerId, roomCode));
         System.out.println("Připojen hráč " + playerId + " do místnosti " + roomCode);
+
+        GameState gameState = roomsManager.getRoomState(roomCode);
+        if(gameState != null) {
+            if(gameState.getPlayer1().getId().equals(playerId)) {
+
+            }
+        }
+
+        broadcastRoomStatus(roomCode);
     }
 
     public void unregisterSession(String sessionId) {
@@ -43,19 +52,20 @@ public class RegistrationService {
     }
 
     //todo
-    private void broadcastRoomStatus(String roomCode) {
+    public void broadcastRoomStatus(String roomCode) {
         GameState gameState = roomsManager.getRoomState(roomCode);
+        if (gameState == null) {
+            return;
+        }
 
-        Boolean isPlayer1Active = gameState.isPlayer1Active();
-        Boolean isPlayer2Active = gameState.isPlayer2Active();
+        Boolean isPlayer1Connected = gameState.isPlayer1Connected();
+        Boolean isPlayer2Connected = gameState.isPlayer2Connected();
 
         Map<String, Boolean> activePlayers = new HashMap<>();
-        activePlayers.put("isPlayer1Active", isPlayer1Active);
-        activePlayers.put("isPlayer2Active", isPlayer2Active);
+        activePlayers.put("isPlayer1Connected", isPlayer1Connected);
+        activePlayers.put("isPlayer2Connected", isPlayer2Connected);
 
-        messagingTemplate.convertAndSend();
-
-
+        messagingTemplate.convertAndSend("/topic/player-status/" + roomCode, activePlayers);
     }
 
     static class SessionData {

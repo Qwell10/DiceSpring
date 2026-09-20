@@ -54,7 +54,7 @@ public class GameService {
         Player p1 = table.getPlayer1();
         Player p2 = table.getPlayer2();
 
-        if (table.isPlayer1Active()) {
+        if (table.isPlayer1Connected()) {
             table.setActivePlayerId(p2.getId());
         } else table.setActivePlayerId(p1.getId());
     }

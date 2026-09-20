@@ -33,33 +33,30 @@ public class RoomsManager {
         return roomCode;
     }
 
-    public void updateRoomState(String roomCode, GameState newGameState) {
-        activeRooms.put(roomCode, newGameState);
-    }
-
     public GameState getRoomState(String roomCode) {
         return activeRooms.get(roomCode);
     }
 
 
     private String generateRoomCode() {
-        StringBuilder codeBuilder;
         String newCode;
 
         do {
-            codeBuilder = new StringBuilder();
+            StringBuilder roomCodeBuilder = new StringBuilder();
             for (int i = 0; i < ROOM_CODE_LENGTH; i++) {
                 int randomIndex = random.nextInt(CHARS.length());
-                codeBuilder.append(CHARS.charAt(randomIndex));
+                roomCodeBuilder.append(CHARS.charAt(randomIndex));
             }
-            newCode = codeBuilder.toString();
+            newCode = roomCodeBuilder.toString();
 
         } while (activeRooms.containsKey(newCode));
 
         return newCode;
     }
 
-    //todo3
+    //todo
     public void playerDisconnected(String roomCode, String disconnectedPlayerId) {
+        GameState room = getRoomState(roomCode);
+
     }
 }

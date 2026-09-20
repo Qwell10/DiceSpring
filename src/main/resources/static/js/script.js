@@ -114,18 +114,8 @@ stompClient.subscribe("/topic/game-state/" + currentRoomCode, function (message)
         }
       });
 
-      fetch("/api/dice/status")
-        .then((response) => response.json())
-        .then((status) => {
-          console.log("Načten úvodní stav:", status);
-          updatePlayerStatusUI(
-            status.isPlayer1Connected,
-            status.isPlayer2Connected,
-          );
-        })
-        .catch((error) =>
-          console.error("❌ Chyba při načítání úvodního stavu:", error),f
-        );
+      stompClient.send("/app/status/request/" + currentRoomCode, {}, "");
+
     },
     function (error) {
       console.error("❌ Chyba WebSocketu: " + error);
@@ -273,13 +263,11 @@ document.getElementById("join-room-btn").addEventListener("click", async () => {
     }
 
     try {
-        // Voláme Java Controller
         const response = await fetch(`/api/dice/join-room/${inputCode}`, {
             method: "POST"
         });
 
         if (!response.ok) {
-            // Pokud Java pošle 400 Bad Request (špatný kód)
             const errorText = await response.text();
             alert("Chyba: " + errorText);
             return;

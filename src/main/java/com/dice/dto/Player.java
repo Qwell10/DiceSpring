@@ -13,4 +13,5 @@ public class Player {
     int totalScore;
     int turnScore;
     int remainingDice;
+    boolean isConnected;
 }

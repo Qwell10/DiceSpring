@@ -4,9 +4,12 @@ import com.dice.dto.ErrorResponse;
 import com.dice.dto.GameState;
 import com.dice.dto.Player;
 import com.dice.dto.RoomResponse;
+import com.dice.service.RegistrationService;
 import com.dice.service.RoomsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -17,6 +20,9 @@ public class RoomsController {
 
     @Autowired
     private RoomsManager roomsManager;
+
+    @Autowired
+    private RegistrationService registrationService;
 
     @PostMapping("/create-room")
     public ResponseEntity<RoomResponse> createRoom() {
@@ -29,9 +35,8 @@ public class RoomsController {
         return ResponseEntity.ok().body(new RoomResponse(roomCode, player1Id));
     }
 
-    @PostMapping("/{roomCode}/join")
+    @PostMapping("/join-room/{roomCode}")
     public ResponseEntity<?> joinRoom(@PathVariable String roomCode) {
-
         GameState table = roomsManager.getRoomState(roomCode);
         if (table == null) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Místnost s tímto kódem neexistuje."));
@@ -47,5 +52,10 @@ public class RoomsController {
         table.setPlayer2(player2);
 
         return ResponseEntity.ok().body(new RoomResponse(roomCode, player2Id));
+    }
+
+    @MessageMapping("/status/request/{roomCode}")
+    public void requestStatus(@DestinationVariable String roomCode) {
+        registrationService.broadcastRoomStatus(roomCode);
     }
 }

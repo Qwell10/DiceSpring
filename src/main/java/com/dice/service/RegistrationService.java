@@ -59,6 +59,14 @@ public class RegistrationService {
 
         System.out.println("Odpojil se hráč " + disconnectedPlayerId + " z místnosti " + roomCode);
 
+        GameState gameState = roomsManager.getRoomState(roomCode);
+
+        if (gameState == null) {
+            return;
+        }
+
+
+
         roomsManager.playerDisconnected(roomCode, disconnectedPlayerId);
     }
 

@@ -25,6 +25,7 @@ public class RegistrationService {
 
     public void registerSession(String sessionId, String playerId, String roomCode) {
         sessionToPlayerMap.put(sessionId, new SessionData(playerId, roomCode));
+
         System.out.println("Připojen hráč " + playerId + " do místnosti " + roomCode);
 
         GameState gameState = roomsManager.getRoomState(roomCode);
@@ -32,18 +33,9 @@ public class RegistrationService {
         if (gameState == null) {
             return;
         }
+
         Player p1 = gameState.getPlayer1();
         Player p2 = gameState.getPlayer2();
-
-        System.out.println("Hledám ID z hlavičky: " + playerId);
-        if (p1 != null) {
-            System.out.println("ID Hráče 1 u stolu: " + p1.getId());
-        }
-        if (p2 != null) {
-            System.out.println("ID Hráče 2 u stolu: " + p2.getId());
-        } else {
-            System.out.println("POZOR: Hráč 2 u stolu neexistuje (je null)!");
-        }
 
         if (p1 != null && p1.getId().equals(playerId)) {
             p1.setConnected(true);

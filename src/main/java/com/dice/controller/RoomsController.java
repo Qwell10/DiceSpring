@@ -56,6 +56,6 @@ public class RoomsController {
 
     @MessageMapping("/status/request/{roomCode}")
     public void requestStatus(@DestinationVariable String roomCode) {
-        registrationService.broadcastRoomStatus(roomCode);
+        registrationService.broadcastPlayerStatus(roomCode);
     }
 }

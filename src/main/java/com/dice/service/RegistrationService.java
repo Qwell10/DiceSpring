@@ -43,7 +43,7 @@ public class RegistrationService {
             p2.setConnected(true);
         }
 
-        broadcastRoomStatus(roomCode);
+        broadcastPlayerStatus(roomCode);
     }
 
     //todo
@@ -70,7 +70,7 @@ public class RegistrationService {
         roomsManager.playerDisconnected(roomCode, disconnectedPlayerId);
     }
 
-    public void broadcastRoomStatus(String roomCode) {
+    public void broadcastPlayerStatus(String roomCode) {
         GameState gameState = roomsManager.getRoomState(roomCode);
         if (gameState == null) {
             return;

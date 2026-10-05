@@ -65,8 +65,6 @@ public class RegistrationService {
             return;
         }
 
-
-
         roomsManager.playerDisconnected(roomCode, disconnectedPlayerId);
     }
 

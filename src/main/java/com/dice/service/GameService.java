@@ -2,6 +2,7 @@ package com.dice.service;
 
 import com.dice.dto.GameState;
 import com.dice.dto.Player;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +16,13 @@ public class GameService {
     @Autowired
     private ScoringService scoringService;
 
-    Player player1 = new Player("Jarda", 0, 0, 6);
-    Player player2 = new Player("Milan", 0, 0, 6);
+    @Autowired
+    private RoomsManager roomsManager;
 
-    private int activePlayerId = 1;
-    private List<Integer> currentDiceOnTable = new ArrayList<>();
+
+    @Getter
+    private final List<Integer> currentDiceOnTable = new ArrayList<>();
+
 
     public List<Integer> rollDice(int amountDice) {
         Random random = new Random();
@@ -30,7 +33,6 @@ public class GameService {
             diceNumbers.add(number);
         }
 
-    //    List<Integer> diceNumbers = new ArrayList<>(List.of(1, 2, 3, 4, 5, 1));
         currentDiceOnTable.clear();
         currentDiceOnTable.addAll(diceNumbers);
 
@@ -47,47 +49,48 @@ public class GameService {
         }
     }
 
-    public List<Integer> getCurrentDiceOnTable() {
-        return currentDiceOnTable;
+    public void switchPlayer(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+        Player p1 = table.getPlayer1();
+        Player p2 = table.getPlayer2();
+
+        if (table.isPlayer1Connected()) {
+            table.setActivePlayerId(p2.getId());
+        } else table.setActivePlayerId(p1.getId());
     }
 
-    public void switchPlayer() {
-        if (activePlayerId == 1) {
-            activePlayerId = 2;
-        } else activePlayerId = 1;
-    }
+    public int getActivePlayerRemainingDice(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
 
-    public int prepareDiceForRoll() {
-        if (activePlayerId == 1) {
-            if (player1.getRemainingDice() == 0) {
-                player1.setRemainingDice(6);
-            }
-            return player1.getRemainingDice();
-        } else {
-            if (player2.getRemainingDice() == 0) {
-                player2.setRemainingDice(6);
-            }
-            return player2.getRemainingDice();
+        Player activePlayer = table.getActivePlayer();
+
+        if (activePlayer == null) {
+            throw new IllegalStateException("Chyba: Aktivní hráč nebyl u stolu nalezen!");
         }
+
+        return activePlayer.getRemainingDice();
     }
 
-    public void setActivePlayerRemainingDiceToSix() {
-        if (activePlayerId == 1) {
-            player1.setRemainingDice(6);
-        } else player2.setRemainingDice(6);
 
+    public void setActivePlayerRemainingDiceToSix(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+        Player activePlayer = table.getActivePlayer();
+
+        activePlayer.setRemainingDice(6);
     }
 
+    public void setActivePlayerTurnScoreToZero(String roomCode) {
+        GameState table = roomsManager.getRoomState(roomCode);
+        Player activePlayer = table.getActivePlayer();
+
+        activePlayer.setTurnScore(0);
+    }
+
+/*
     public void setActivePlayerRemainingDice(List<Integer> pickedDice) {
         if (activePlayerId == 1) {
             player1.setRemainingDice(player1.getRemainingDice() - pickedDice.size());
         } else player2.setRemainingDice(player2.getRemainingDice() - pickedDice.size());
-    }
-
-    public void setActivePlayerTurnScore(int turnScore) {
-        if (activePlayerId == 1) {
-            player1.setTurnScore(turnScore);
-        } else player2.setTurnScore(turnScore);
     }
 
     public void saveTurnScore(int turnScore) {
@@ -123,12 +126,10 @@ public class GameService {
 
         return totalScore;
     }
-                       // REST //
-    ////////////////////////////////////////////////////////////
-                    // WEBSOCKET //
 
     public GameState createGameStateSnapshot(boolean isNewRoll) {
         return new GameState(player1, player2, currentDiceOnTable, isNewRoll, activePlayerId);
     }
+*/
 
 }

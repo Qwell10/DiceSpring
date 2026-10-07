@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+//WEBSOCKET - komunikační protokol, který umožňuje trvalé a obousměrné spojení mezi klientem a serverem
+//HTTP - dotaz-odpověď -- klient se musi zeptat serveru, až potom dostane odpověď
 @Component
 public class WebSocketEventListener {
 
@@ -18,13 +20,12 @@ public class WebSocketEventListener {
     public void handleConnect(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String playerIdStr = accessor.getFirstNativeHeader("playerId");
+        String playerId = accessor.getFirstNativeHeader("playerId");
+        String roomCode = accessor.getFirstNativeHeader("roomCode");
         String sessionId = accessor.getSessionId();
 
-        if (playerIdStr != null) {
-            int playerId = Integer.parseInt(playerIdStr);
-
-            registrationService.registerSession(sessionId, playerId);
+        if (playerId != null && roomCode != null) {
+            registrationService.registerSession(sessionId, playerId, roomCode);
 
             System.out.println("✅ Connected: Session " + sessionId + " -> Player " + playerId);
         }
@@ -38,5 +39,4 @@ public class WebSocketEventListener {
 
         System.out.println("❌ Disconnected: Session " + sessionId);
     }
-
 }

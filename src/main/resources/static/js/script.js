@@ -4,34 +4,44 @@ const rollBtn = document.getElementById("rollBtn");
 const scoreBtn = document.getElementById("scoreBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
 
-let myPlayerId = 0;
+let myPlayerId = sessionStorage.getItem("playerId") || null;
+let currentRoomCode = null;
 let myRole = "";
 let stompClient = null;
 let currentActivePlayerId = 1;
 
-async function initializeGame() {
+async function createRoomAction() {
     try {
-        console.log("Odesílám žádost o registraci...");
+        console.log("Odesílám žádost o založení místnosti...");
 
-        const response = await fetch("/api/dice/join", {
+        const response = await fetch("/api/dice/create-room", {
             method: "POST"
         });
 
+        if (!response.ok) throw new Error("Nepodařilo se vytvořit místnost");
+
         const data = await response.json();
 
-        myPlayerId = data.id;
-        myRole = data.role;
+        myPlayerId = data.playerId;
+        currentRoomCode = data.roomCode;
+        myRole = "Hráč 1"; 
 
-        console.log(`Úspěšně zaregistrován! Moje ID: ${myPlayerId}, Role: ${myRole}`);
+        sessionStorage.setItem("playerId", myPlayerId);
+
+        console.log(`Místnost vytvořena! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
+
+        document.getElementById("display-room-code").innerText = currentRoomCode;
+        document.getElementById("lobby-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "flex";
+
+        updatePlayerStatusUI(true, false);
 
         connect();
 
     } catch (error) {
-        console.error("Chyba při registraci hráče:", error);
+        console.error("Chyba při vytváření místnosti:", error);
     }
 }
-
-initializeGame();
 
 function connect() {
   updateButtonsUI(1);
@@ -40,15 +50,16 @@ function connect() {
   stompClient = Stomp.over(socket);
 
   const headers = {
-    playerId: myPlayerId,
-  };
+     playerId: myPlayerId,
+     roomCode: currentRoomCode
+   };
 
   stompClient.connect(
     headers,
     function (frame) {
       console.log("✅ WebSocket připojen: " + frame);
 
-      stompClient.subscribe("/topic/player-status", function (statusMessage) {
+      stompClient.subscribe("/topic/player-status/" + currentRoomCode, function (statusMessage) {
         const status = JSON.parse(statusMessage.body);
         updatePlayerStatusUI(
           status.isPlayer1Connected,
@@ -56,38 +67,38 @@ function connect() {
         );
       });
 
-stompClient.subscribe("/topic/game-state", function (message) {
-  const gameState = JSON.parse(message.body);
-  console.log("Nový stav hry ze serveru:", gameState);
+      stompClient.subscribe("/topic/game-state/" + currentRoomCode, function (message) {
+        const gameState = JSON.parse(message.body);
+        console.log("Nový stav hry ze serveru:", gameState);
 
-  if (currentActivePlayerId !== gameState.activePlayerId) {
-    currentActivePlayerId = gameState.activePlayerId;
-    updateButtonsUI(gameState.activePlayerId);
+        if (currentActivePlayerId !== gameState.activePlayerId) {
+          currentActivePlayerId = gameState.activePlayerId;
+          updateButtonsUI(gameState.activePlayerId);
 
-    setActivePlayerWindow(gameState.activePlayerId);
-  }
+          setActivePlayerWindow(gameState.activePlayerId);
+        }
 
-  if (!gameState.diceOnTable || gameState.diceOnTable.length === 0) {
-    diceArea.innerHTML = "";
-  }
+        if (!gameState.diceOnTable || gameState.diceOnTable.length === 0) {
+          diceArea.innerHTML = "";
+        }
 
-  if (gameState.player1) {
-    document.getElementById("score-p1").innerText = gameState.player1.totalScore;
-    document.getElementById("actual-score-p1").innerText = gameState.player1.turnScore;
-  }
-  if (gameState.player2) {
-    document.getElementById("score-p2").innerText = gameState.player2.totalScore;
-    document.getElementById("actual-score-p2").innerText = gameState.player2.turnScore;
-  }
+        if (gameState.player1) {
+          document.getElementById("score-p1").innerText = gameState.player1.totalScore;
+          document.getElementById("actual-score-p1").innerText = gameState.player1.turnScore;
+        }
+        if (gameState.player2) {
+          document.getElementById("score-p2").innerText = gameState.player2.totalScore;
+          document.getElementById("actual-score-p2").innerText = gameState.player2.turnScore;
+        }
 
-  if (myPlayerId !== gameState.activePlayerId) {
-    if (gameState.diceOnTable && gameState.diceOnTable.length > 0) {
-      renderDice(gameState.diceOnTable, false, false, gameState.isNewRoll);
-    }
-  }
-});
+        if (myPlayerId !== gameState.activePlayerId) {
+          if (gameState.diceOnTable && gameState.diceOnTable.length > 0) {
+            renderDice(gameState.diceOnTable, false, false, gameState.isNewRoll);
+          }
+        }
+      });
 
-      stompClient.subscribe("/topic/dice-selection", function (message) {
+      stompClient.subscribe("/topic/dice-selection/" + currentRoomCode, function (message) {
         const selectionData = JSON.parse(message.body);
         console.log("Změna výběru kostky ze serveru:", selectionData);
 
@@ -104,18 +115,8 @@ stompClient.subscribe("/topic/game-state", function (message) {
         }
       });
 
-      fetch("/api/dice/status")
-        .then((response) => response.json())
-        .then((status) => {
-          console.log("Načten úvodní stav:", status);
-          updatePlayerStatusUI(
-            status.isPlayer1Connected,
-            status.isPlayer2Connected,
-          );
-        })
-        .catch((error) =>
-          console.error("❌ Chyba při načítání úvodního stavu:", error),f
-        );
+      stompClient.send("/app/status/request/" + currentRoomCode, {}, "");
+
     },
     function (error) {
       console.error("❌ Chyba WebSocketu: " + error);
@@ -184,7 +185,6 @@ function updateButtonsUI(activePlayerId) {
     }
 }
 
-
 function renderDice(diceValues, isBust, allowSelection, animate = true) {
   diceArea.innerHTML = "";
   const diceElements = [];
@@ -248,6 +248,50 @@ function showMessage(text, isError) {
     gameMessage.className = "";
   }, 3500);
 }
+
+document.getElementById("create-room-btn").addEventListener("click", () => {
+    createRoomAction();
+});
+
+document.getElementById("join-room-btn").addEventListener("click", async () => {
+    const inputCode = document.getElementById("room-code-input").value.trim().toUpperCase();
+
+    if (inputCode === "") {
+        alert("Zadej kód místnosti!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/dice/join-room/${inputCode}`, {
+            method: "POST"
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert("Chyba: " + errorText);
+            return;
+        }
+
+        const data = await response.json();
+
+        myPlayerId = data.playerId;
+        currentRoomCode = data.roomCode;
+        myRole = "Hráč 2"; 
+
+        sessionStorage.setItem("playerId", myPlayerId);
+
+        document.getElementById("display-room-code").innerText = currentRoomCode;
+        document.getElementById("lobby-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "flex"; 
+
+        console.log(`Úspěšně připojeno! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
+
+        connect();
+
+    } catch (error) {
+        console.error("Kritická chyba při připojování:", error);
+    }
+});
 
 rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;

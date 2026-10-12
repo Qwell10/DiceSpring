@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-//todo - nebude potreba kvuli RoomsController
-
 @Service
 public class RegistrationService {
 
@@ -21,34 +19,29 @@ public class RegistrationService {
     @Autowired
     private RoomsManager roomsManager;
 
-    private final Map<String, SessionData> sessionToPlayerMap = new ConcurrentHashMap<>();
+    private final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();
+
+    //todo - rozdělit mezi RoomsManager a RegistrationService
+    //todo - Přímé změny v GameState musí dělat RoomsManager, ne RegistrationService
+
+    //todo - RegistrationService (Síť a komunikace)
+    //todo - RoomsManager (Herní logika a paměť)
+
+    //todo - //todo - RegistrationService PŘEDÁVÁ informace (volá metody) do RoomsManageru,
+    //                z něj si vezme hotový výsledek a ten ROZESÍLÁ přes STOMP na frontend.
 
     public void registerSession(String sessionId, String playerId, String roomCode) {
-        sessionToPlayerMap.put(sessionId, new SessionData(playerId, roomCode));
-
+        activeSessions.put(sessionId, new SessionData(playerId, roomCode));
         System.out.println("Připojen hráč " + playerId + " do místnosti " + roomCode);
 
-        GameState gameState = roomsManager.getRoomState(roomCode);
-
-        if (gameState == null) {
-            return;
-        }
-
-        Player p1 = gameState.getPlayer1();
-        Player p2 = gameState.getPlayer2();
-
-        if (p1 != null && p1.getId().equals(playerId)) {
-            p1.setConnected(true);
-        } else if (p2 != null && p2.getId().equals(playerId)) {
-            p2.setConnected(true);
-        }
+        roomsManager.playerConnected(roomCode, playerId);
 
         broadcastPlayerStatus(roomCode);
     }
 
-    //todo
+
     public void unregisterSession(String sessionId) {
-        SessionData data = sessionToPlayerMap.remove(sessionId);
+        SessionData data = activeSessions.remove(sessionId);
 
         if (data == null) {
             return;
@@ -59,13 +52,9 @@ public class RegistrationService {
 
         System.out.println("Odpojil se hráč " + disconnectedPlayerId + " z místnosti " + roomCode);
 
-        GameState gameState = roomsManager.getRoomState(roomCode);
-
-        if (gameState == null) {
-            return;
-        }
-
         roomsManager.playerDisconnected(roomCode, disconnectedPlayerId);
+
+        broadcastPlayerStatus(roomCode);
     }
 
     public void broadcastPlayerStatus(String roomCode) {

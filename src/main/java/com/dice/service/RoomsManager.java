@@ -12,11 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class RoomsManager {
 
-    private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    private static final int ROOM_CODE_LENGTH = 5;
-    private final Random random = new Random();
-
     private final Map<String, GameState> activeRooms = new ConcurrentHashMap<>();
+
 
     public String createNewRoom(Player player1) {
         String roomCode = generateRoomCode();
@@ -33,10 +30,51 @@ public class RoomsManager {
         return roomCode;
     }
 
+
+    public void playerConnected(String roomCode, String connectedPlayerId) {
+        GameState gameState = getRoomState(roomCode);
+
+        if (gameState == null) {
+            return;
+        }
+
+        Player p1 = gameState.getPlayer1();
+        Player p2 = gameState.getPlayer2();
+
+        if (p1 != null && p1.getId().equals(connectedPlayerId)) {
+            p1.setConnected(true);
+        } else if (p2 != null && p2.getId().equals(connectedPlayerId)) {
+            p2.setConnected(true);
+        }
+    }
+
+
+    //todo
+    public void playerDisconnected(String roomCode, String disconnectedPlayerId) {
+        GameState gameState = getRoomState(roomCode);
+
+        if (gameState == null) {
+            return;
+        }
+
+        Player p1 = gameState.getPlayer1();
+        Player p2 = gameState.getPlayer2();
+
+        if (p1 != null && p1.getId().equals(disconnectedPlayerId)) {
+            p1.setConnected(false);
+        } else if (p2 != null && p2.getId().equals(disconnectedPlayerId)) {
+            p2.setConnected(false);
+        }
+
+    }
+
     public GameState getRoomState(String roomCode) {
         return activeRooms.get(roomCode);
     }
 
+    private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final int ROOM_CODE_LENGTH = 5;
+    private final Random random = new Random();
 
     private String generateRoomCode() {
         String newCode;
@@ -52,11 +90,5 @@ public class RoomsManager {
         } while (activeRooms.containsKey(newCode));
 
         return newCode;
-    }
-
-    //todo
-    public void playerDisconnected(String roomCode, String disconnectedPlayerId) {
-        GameState room = getRoomState(roomCode);
-
     }
 }

@@ -21,15 +21,6 @@ public class RegistrationService {
 
     private final Map<String, SessionData> activeSessions = new ConcurrentHashMap<>();
 
-    //todo - rozdělit mezi RoomsManager a RegistrationService
-    //todo - Přímé změny v GameState musí dělat RoomsManager, ne RegistrationService
-
-    //todo - RegistrationService (Síť a komunikace)
-    //todo - RoomsManager (Herní logika a paměť)
-
-    //todo - //todo - RegistrationService PŘEDÁVÁ informace (volá metody) do RoomsManageru,
-    //                z něj si vezme hotový výsledek a ten ROZESÍLÁ přes STOMP na frontend.
-
     public void registerSession(String sessionId, String playerId, String roomCode) {
         activeSessions.put(sessionId, new SessionData(playerId, roomCode));
         System.out.println("Připojen hráč " + playerId + " do místnosti " + roomCode);

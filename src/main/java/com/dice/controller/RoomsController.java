@@ -35,21 +35,22 @@ public class RoomsController {
         return ResponseEntity.ok().body(new RoomResponse(roomCode, player1Id));
     }
 
+                             //todo - odchod hrace - znovu napojeni - "mistnost je plna"
     @PostMapping("/join-room/{roomCode}")
     public ResponseEntity<?> joinRoom(@PathVariable String roomCode) {
-        GameState table = roomsManager.getRoomState(roomCode);
-        if (table == null) {
+        GameState room = roomsManager.getRoomState(roomCode);
+        if (room == null) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Místnost s tímto kódem neexistuje."));
         }
 
-        if (table.getPlayer2() != null) {
+        if (room.getPlayer2() != null) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Místnost je již plná."));
         }
 
         String player2Id = UUID.randomUUID().toString();
         Player player2 = new Player(player2Id, "Player2", 0, 0, 6, false);
 
-        table.setPlayer2(player2);
+        room.setPlayer2(player2);
 
         return ResponseEntity.ok().body(new RoomResponse(roomCode, player2Id));
     }

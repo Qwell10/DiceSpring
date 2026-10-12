@@ -11,9 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RoomsManager {
-
     private final Map<String, GameState> activeRooms = new ConcurrentHashMap<>();
-
 
     public String createNewRoom(Player player1) {
         String roomCode = generateRoomCode();
@@ -29,7 +27,6 @@ public class RoomsManager {
         activeRooms.put(roomCode, startingGameState);
         return roomCode;
     }
-
 
     public void playerConnected(String roomCode, String connectedPlayerId) {
         GameState gameState = getRoomState(roomCode);
@@ -48,8 +45,6 @@ public class RoomsManager {
         }
     }
 
-
-    //todo
     public void playerDisconnected(String roomCode, String disconnectedPlayerId) {
         GameState gameState = getRoomState(roomCode);
 
@@ -65,7 +60,6 @@ public class RoomsManager {
         } else if (p2 != null && p2.getId().equals(disconnectedPlayerId)) {
             p2.setConnected(false);
         }
-
     }
 
     public GameState getRoomState(String roomCode) {

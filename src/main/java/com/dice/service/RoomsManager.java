@@ -28,6 +28,19 @@ public class RoomsManager {
         return roomCode;
     }
 
+    //todo
+    public String joinRoom(String roomCode, String playerId) {
+        GameState room = getRoomState(roomCode);
+
+        if (room == null) {
+            throw new IllegalArgumentException("Místnost s tímto kódem neexistuje.");
+        }
+
+
+
+        return
+    }
+
     public void playerConnected(String roomCode, String connectedPlayerId) {
         GameState gameState = getRoomState(roomCode);
 

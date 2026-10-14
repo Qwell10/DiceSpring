@@ -35,24 +35,18 @@ public class RoomsController {
         return ResponseEntity.ok().body(new RoomResponse(roomCode, player1Id));
     }
 
-                             //todo - odchod hrace - znovu napojeni - "mistnost je plna"
+                             //todo 1 - presunuti business logiky do RoomsManager
+                             //todo 2 - odchod hrace - znovu napojeni - "mistnost je plna"
     @PostMapping("/join-room/{roomCode}")
-    public ResponseEntity<?> joinRoom(@PathVariable String roomCode) {
-        GameState room = roomsManager.getRoomState(roomCode);
-        if (room == null) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("Místnost s tímto kódem neexistuje."));
+    public ResponseEntity<?> joinRoom(@PathVariable String roomCode, @RequestParam(required = false) String playerId) {
+        try {
+            String finalPlayerId = roomsManager.joinRoom(roomCode, playerId);
+
+            return ResponseEntity.ok().body(new RoomResponse(roomCode, finalPlayerId));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
-
-        if (room.getPlayer2() != null) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("Místnost je již plná."));
-        }
-
-        String player2Id = UUID.randomUUID().toString();
-        Player player2 = new Player(player2Id, "Player2", 0, 0, 6, false);
-
-        room.setPlayer2(player2);
-
-        return ResponseEntity.ok().body(new RoomResponse(roomCode, player2Id));
     }
 
     @MessageMapping("/status/request/{roomCode}")

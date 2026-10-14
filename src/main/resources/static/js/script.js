@@ -262,7 +262,10 @@ document.getElementById("join-room-btn").addEventListener("click", async () => {
     }
 
     try {
-        const response = await fetch(`/api/dice/join-room/${inputCode}`, {
+        let myPlayerId = sessionStorage.getItem("playerId");
+        const playerIdQuery = myPlayerId ? `?playerId=${myPlayerId}` : "";
+
+        const response = await fetch(`/api/dice/join-room/${inputCode}${playerIdQuery}`, {
             method: "POST"
         });
 

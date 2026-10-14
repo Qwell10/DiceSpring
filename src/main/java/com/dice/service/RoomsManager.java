@@ -80,6 +80,7 @@ public class RoomsManager {
         return activeRooms.get(roomCode);
     }
 
+        Stred tela;
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final int ROOM_CODE_LENGTH = 5;
     private final Random random = new Random();

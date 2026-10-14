@@ -75,6 +75,7 @@ public class RoomsManager {
         }
     }
 
+    //todo - Co potřebuje Johny vse na fakturách - zná ty "náležistoti"?
     public GameState getRoomState(String roomCode) {
         return activeRooms.get(roomCode);
     }

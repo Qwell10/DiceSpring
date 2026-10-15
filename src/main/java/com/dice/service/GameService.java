@@ -50,19 +50,20 @@ public class GameService {
     }
 
     public void switchPlayer(String roomCode) {
-        GameState table = roomsManager.getRoomState(roomCode);
-        Player p1 = table.getPlayer1();
-        Player p2 = table.getPlayer2();
+        GameState room = roomsManager.getRoomState(roomCode);
 
-        if (table.isPlayer1Connected()) {
-            table.setActivePlayerId(p2.getId());
-        } else table.setActivePlayerId(p1.getId());
+        Player p1 = room.getPlayer1();
+        Player p2 = room.getPlayer2();
+
+        if (room.isPlayer1Connected()) {
+            room.setActivePlayerId(p2.getId());
+        } else room.setActivePlayerId(p1.getId());
     }
 
     public int getActivePlayerRemainingDice(String roomCode) {
-        GameState table = roomsManager.getRoomState(roomCode);
+        GameState room = roomsManager.getRoomState(roomCode);
 
-        Player activePlayer = table.getActivePlayer();
+        Player activePlayer = room.getActivePlayer();
 
         if (activePlayer == null) {
             throw new IllegalStateException("Chyba: Aktivní hráč nebyl u stolu nalezen!");
@@ -73,15 +74,15 @@ public class GameService {
 
 
     public void setActivePlayerRemainingDiceToSix(String roomCode) {
-        GameState table = roomsManager.getRoomState(roomCode);
-        Player activePlayer = table.getActivePlayer();
+        GameState room = roomsManager.getRoomState(roomCode);
+        Player activePlayer = room.getActivePlayer();
 
         activePlayer.setRemainingDice(6);
     }
 
     public void setActivePlayerTurnScoreToZero(String roomCode) {
-        GameState table = roomsManager.getRoomState(roomCode);
-        Player activePlayer = table.getActivePlayer();
+        GameState room = roomsManager.getRoomState(roomCode);
+        Player activePlayer = room.getActivePlayer();
 
         activePlayer.setTurnScore(0);
     }

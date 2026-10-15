@@ -37,19 +37,18 @@ public class RoomsManager {
         }
 
 
-
-        return
+        return null;
     }
 
     public void playerConnected(String roomCode, String connectedPlayerId) {
-        GameState gameState = getRoomState(roomCode);
+        GameState room = getRoomState(roomCode);
 
-        if (gameState == null) {
+        if (room == null) {
             return;
         }
 
-        Player p1 = gameState.getPlayer1();
-        Player p2 = gameState.getPlayer2();
+        Player p1 = room.getPlayer1();
+        Player p2 = room.getPlayer2();
 
         if (p1 != null && p1.getId().equals(connectedPlayerId)) {
             p1.setConnected(true);
@@ -59,14 +58,14 @@ public class RoomsManager {
     }
 
     public void playerDisconnected(String roomCode, String disconnectedPlayerId) {
-        GameState gameState = getRoomState(roomCode);
+        GameState room = getRoomState(roomCode);
 
-        if (gameState == null) {
+        if (room == null) {
             return;
         }
 
-        Player p1 = gameState.getPlayer1();
-        Player p2 = gameState.getPlayer2();
+        Player p1 = room.getPlayer1();
+        Player p2 = room.getPlayer2();
 
         if (p1 != null && p1.getId().equals(disconnectedPlayerId)) {
             p1.setConnected(false);
@@ -75,12 +74,10 @@ public class RoomsManager {
         }
     }
 
-    //todo - Co potřebuje Johny vse na fakturách - zná ty "náležistoti"?
     public GameState getRoomState(String roomCode) {
         return activeRooms.get(roomCode);
     }
 
-        Stred tela;
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final int ROOM_CODE_LENGTH = 5;
     private final Random random = new Random();

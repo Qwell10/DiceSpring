@@ -49,13 +49,14 @@ public class RegistrationService {
     }
 
     public void broadcastPlayerStatus(String roomCode) {
-        GameState gameState = roomsManager.getRoomState(roomCode);
-        if (gameState == null) {
+        GameState room = roomsManager.getRoomState(roomCode);
+
+        if (room == null) {
             return;
         }
 
-        Boolean isPlayer1Connected = gameState.isPlayer1Connected();
-        Boolean isPlayer2Connected = gameState.isPlayer2Connected();
+        Boolean isPlayer1Connected = room.isPlayer1Connected();
+        Boolean isPlayer2Connected = room.isPlayer2Connected();
 
         Map<String, Boolean> activePlayers = new HashMap<>();
         activePlayers.put("isPlayer1Connected", isPlayer1Connected);

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -28,7 +29,7 @@ public class RoomsManager {
         return roomCode;
     }
 
-    //todo
+    //todo - neni 100%, potreba doladit -- UUID je ulozene do sessionStorage na FE
     public String joinRoom(String roomCode, String playerId) {
         GameState room = getRoomState(roomCode);
 
@@ -36,9 +37,25 @@ public class RoomsManager {
             throw new IllegalArgumentException("Místnost s tímto kódem neexistuje.");
         }
 
+        if (playerId == null) {
+            String newPlayerId = UUID.randomUUID().toString();
+            Player newPlayer = new Player(newPlayerId, "Milouš", 0, 0, 6, false);
+            room.setPlayer2(newPlayer);
 
-        return null;
+            return newPlayerId;
+        }
+
+        if (room.getPlayer1() != null && playerId.equals(room.getPlayer1().getId())) {
+            return playerId;
+        }
+
+        if (room.getPlayer2() != null && playerId.equals(room.getPlayer2().getId())) {
+            return playerId;
+        }
+
+        throw new IllegalArgumentException("Neplatné ID hráče nebo je místnost plná.");
     }
+
 
     public void playerConnected(String roomCode, String connectedPlayerId) {
         GameState room = getRoomState(roomCode);

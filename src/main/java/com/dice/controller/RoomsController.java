@@ -36,7 +36,6 @@ public class RoomsController {
     }
 
                              //todo 1 - presunuti business logiky do RoomsManager
-                             //todo 2 - odchod hrace - znovu napojeni - "mistnost je plna"
     @PostMapping("/join-room/{roomCode}")
     public ResponseEntity<?> joinRoom(@PathVariable String roomCode, @RequestParam(required = false) String playerId) {
         try {

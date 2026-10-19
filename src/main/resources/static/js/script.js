@@ -49,8 +49,10 @@ function connect() {
   const socket = new SockJS("/ws");
   stompClient = Stomp.over(socket);
 
+  const playerId = sessionStorage.getItem("playerId");
+
   const headers = {
-     playerId: myPlayerId,
+     playerId: playerId,
      roomCode: currentRoomCode
    };
 

@@ -35,7 +35,6 @@ public class RoomsController {
         return ResponseEntity.ok().body(new RoomResponse(roomCode, player1Id));
     }
 
-                             //todo 1 - presunuti business logiky do RoomsManager
     @PostMapping("/join-room/{roomCode}")
     public ResponseEntity<?> joinRoom(@PathVariable String roomCode, @RequestParam(required = false) String playerId) {
         try {

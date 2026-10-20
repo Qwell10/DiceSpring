@@ -10,6 +10,49 @@ let myRole = "";
 let stompClient = null;
 let currentActivePlayerId = 1;
 
+//Pro případ okamžitého návratu ke stolu (F5)
+document.addEventListener("DOMContentLoaded", async () => {
+    const savedRoomCode = sessionStorage.getItem("roomCode");
+    const savedPlayerId = sessionStorage.getItem("playerId");
+
+    if (savedRoomCode && savedPlayerId) {
+        console.log(`Ověřuji návrat do místnosti: ${savedRoomCode}`);
+
+        try {
+            const response = await fetch(`/api/dice/join-room/${savedRoomCode}?playerId=${savedPlayerId}`, {
+                method: "POST"
+            });
+
+            if (response.ok) {
+                currentRoomCode = savedRoomCode;
+
+                document.getElementById("lobby-screen").style.display = "none";
+                document.getElementById("game-screen").style.display = "flex";
+                document.getElementById("display-room-code").innerText = currentRoomCode;
+
+                console.log("Návrat schválen, připojuji WebSockety...");
+
+                //oddálení připojení k WebSocket
+                setTimeout(connect, 1000);
+            } else {
+                console.warn("Návrat zamítnut. Místnost už pravděpodobně neexistuje.");
+                sessionStorage.removeItem("roomCode");
+                sessionStorage.removeItem("playerId");
+            }
+        } catch (error) {
+            console.error("Kritická chyba při obnově hry:", error);
+        }
+    }
+});
+
+window.addEventListener("beforeunload", () => {
+    if (stompClient !== null) {
+        stompClient.disconnect(() => {
+            console.log("Korektní odpojení před restartem stránky.");
+        });
+    }
+});
+
 async function createRoomAction() {
     try {
         console.log("Odesílám žádost o založení místnosti...");

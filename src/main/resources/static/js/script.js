@@ -11,35 +11,26 @@ let stompClient = null;
 let currentActivePlayerId = 1;
 
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("🔄 [Fáze 2: DOMContentLoaded] Stránka se načetla. Čtu paměť prohlížeče...");
     const savedRoomCode = sessionStorage.getItem("roomCode");
     const savedPlayerId = sessionStorage.getItem("playerId");
 
-    console.log(`🔄 V paměti nalezeno -> Místnost: ${savedRoomCode}, Hráč: ${savedPlayerId}`);
-
     if (savedRoomCode && savedPlayerId) {
-        console.log(`🔄 Jdu se zeptat backendu, jestli nás pustí zpět...`);
         try {
             const response = await fetch(`/api/dice/join-room/${savedRoomCode}?playerId=${savedPlayerId}`, {
                 method: "POST"
             });
 
-            console.log(`🔄 Backend odpověděl statusem: ${response.status}`);
-
             if (response.ok) {
                 currentRoomCode = savedRoomCode;
-                // TADY PŘIDÁVÁME I NAČTENÍ HRÁČE Z PAMĚTI PRO JISTOTU:
                 myPlayerId = savedPlayerId;
 
-                console.log("🔄 Přístup povolen. Měním UI z lobby na herní stůl.");
                 document.getElementById("lobby-screen").style.display = "none";
                 document.getElementById("game-screen").style.display = "flex";
                 document.getElementById("display-room-code").innerText = currentRoomCode;
 
-                console.log("🔄 UI připraveno. Spouštím funkci connect() pro WebSockety...");
                 connect();
             } else {
-                console.warn("❌ Backend návrat zamítl (místnost možná neexistuje). Mažu paměť.");
+                console.warn("❌ Backend návrat zamítl. Mažu paměť.");
                 sessionStorage.removeItem("roomCode");
                 sessionStorage.removeItem("playerId");
             }
@@ -52,11 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 window.addEventListener("beforeunload", () => {
-    console.log("🛑 [Fáze 1: beforeunload] Prohlížeč začíná ničit stránku.");
     if (stompClient !== null) {
-        console.log("🛑 Odesílám STOMP disconnect na server...");
         stompClient.disconnect(() => {
-            console.log("🛑 STOMP disconnect úspěšně potvrzen serverem.");
         });
     } else {
         console.log("🛑 Není aktivní STOMP spojení, nemám co odpojovat.");
@@ -80,6 +68,7 @@ async function createRoomAction() {
         myRole = "Hráč 1"; 
 
         sessionStorage.setItem("playerId", myPlayerId);
+        sessionStorage.setItem("roomCode", currentRoomCode);
 
         console.log(`Místnost vytvořena! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
 
@@ -93,6 +82,50 @@ async function createRoomAction() {
 
     } catch (error) {
         console.error("Chyba při vytváření místnosti:", error);
+    }
+}
+
+async function joinRoomAction() {
+  const inputCode = document.getElementById("room-code-input").value.trim().toUpperCase();
+
+    if (inputCode === "") {
+        alert("Zadej kód místnosti!");
+        return;
+    }
+
+    try {
+        let myPlayerId = sessionStorage.getItem("playerId");
+        const playerIdQuery = myPlayerId ? `?playerId=${myPlayerId}` : "";
+
+        const response = await fetch(`/api/dice/join-room/${inputCode}${playerIdQuery}`, {
+            method: "POST"
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert("Chyba: " + errorText);
+            return;
+        }
+
+        const data = await response.json();
+
+        myPlayerId = data.playerId;
+        currentRoomCode = data.roomCode;
+        myRole = "Hráč 2"; 
+
+        sessionStorage.setItem("playerId", myPlayerId);
+        sessionStorage.setItem("roomCode", currentRoomCode);
+
+        document.getElementById("display-room-code").innerText = currentRoomCode;
+        document.getElementById("lobby-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "flex"; 
+
+        console.log(`Úspěšně připojeno! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
+
+        connect();
+
+    } catch (error) {
+        console.error("Kritická chyba při připojování:", error);
     }
 }
 
@@ -305,52 +338,9 @@ function showMessage(text, isError) {
   }, 3500);
 }
 
-document.getElementById("create-room-btn").addEventListener("click", () => {
-    createRoomAction();
-});
+document.getElementById("create-room-btn").addEventListener("click", createRoomAction);
 
-document.getElementById("join-room-btn").addEventListener("click", async () => {
-    const inputCode = document.getElementById("room-code-input").value.trim().toUpperCase();
-
-    if (inputCode === "") {
-        alert("Zadej kód místnosti!");
-        return;
-    }
-
-    try {
-        let myPlayerId = sessionStorage.getItem("playerId");
-        const playerIdQuery = myPlayerId ? `?playerId=${myPlayerId}` : "";
-
-        const response = await fetch(`/api/dice/join-room/${inputCode}${playerIdQuery}`, {
-            method: "POST"
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            alert("Chyba: " + errorText);
-            return;
-        }
-
-        const data = await response.json();
-
-        myPlayerId = data.playerId;
-        currentRoomCode = data.roomCode;
-        myRole = "Hráč 2"; 
-
-        sessionStorage.setItem("playerId", myPlayerId);
-
-        document.getElementById("display-room-code").innerText = currentRoomCode;
-        document.getElementById("lobby-screen").style.display = "none";
-        document.getElementById("game-screen").style.display = "flex"; 
-
-        console.log(`Úspěšně připojeno! Kód stolu: ${currentRoomCode}, Moje ID: ${myPlayerId}`);
-
-        connect();
-
-    } catch (error) {
-        console.error("Kritická chyba při připojování:", error);
-    }
-});
+document.getElementById("join-room-btn").addEventListener("click", joinRoomAction);
 
 rollBtn.addEventListener("click", () => {
   rollBtn.disabled = true;

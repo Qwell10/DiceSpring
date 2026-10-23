@@ -10,46 +10,56 @@ let myRole = "";
 let stompClient = null;
 let currentActivePlayerId = 1;
 
-//Pro případ okamžitého návratu ke stolu (F5)
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("🔄 [Fáze 2: DOMContentLoaded] Stránka se načetla. Čtu paměť prohlížeče...");
     const savedRoomCode = sessionStorage.getItem("roomCode");
     const savedPlayerId = sessionStorage.getItem("playerId");
 
-    if (savedRoomCode && savedPlayerId) {
-        console.log(`Ověřuji návrat do místnosti: ${savedRoomCode}`);
+    console.log(`🔄 V paměti nalezeno -> Místnost: ${savedRoomCode}, Hráč: ${savedPlayerId}`);
 
+    if (savedRoomCode && savedPlayerId) {
+        console.log(`🔄 Jdu se zeptat backendu, jestli nás pustí zpět...`);
         try {
             const response = await fetch(`/api/dice/join-room/${savedRoomCode}?playerId=${savedPlayerId}`, {
                 method: "POST"
             });
 
+            console.log(`🔄 Backend odpověděl statusem: ${response.status}`);
+
             if (response.ok) {
                 currentRoomCode = savedRoomCode;
+                // TADY PŘIDÁVÁME I NAČTENÍ HRÁČE Z PAMĚTI PRO JISTOTU:
+                myPlayerId = savedPlayerId;
 
+                console.log("🔄 Přístup povolen. Měním UI z lobby na herní stůl.");
                 document.getElementById("lobby-screen").style.display = "none";
                 document.getElementById("game-screen").style.display = "flex";
                 document.getElementById("display-room-code").innerText = currentRoomCode;
 
-                console.log("Návrat schválen, připojuji WebSockety...");
-
-                //oddálení připojení k WebSocket
-                setTimeout(connect, 1000);
+                console.log("🔄 UI připraveno. Spouštím funkci connect() pro WebSockety...");
+                connect();
             } else {
-                console.warn("Návrat zamítnut. Místnost už pravděpodobně neexistuje.");
+                console.warn("❌ Backend návrat zamítl (místnost možná neexistuje). Mažu paměť.");
                 sessionStorage.removeItem("roomCode");
                 sessionStorage.removeItem("playerId");
             }
         } catch (error) {
-            console.error("Kritická chyba při obnově hry:", error);
+            console.error("❌ Došlo k chybě při volání REST API:", error);
         }
+    } else {
+        console.log("🔄 V paměti nic není, hráč je nový. Zůstávám v lobby.");
     }
 });
 
 window.addEventListener("beforeunload", () => {
+    console.log("🛑 [Fáze 1: beforeunload] Prohlížeč začíná ničit stránku.");
     if (stompClient !== null) {
+        console.log("🛑 Odesílám STOMP disconnect na server...");
         stompClient.disconnect(() => {
-            console.log("Korektní odpojení před restartem stránky.");
+            console.log("🛑 STOMP disconnect úspěšně potvrzen serverem.");
         });
+    } else {
+        console.log("🛑 Není aktivní STOMP spojení, nemám co odpojovat.");
     }
 });
 
@@ -87,6 +97,7 @@ async function createRoomAction() {
 }
 
 function connect() {
+  console.log("🔌 [Fáze 3: connect()] Funkce connect byla zavolána. Vytvářím SockJS...");
   updateButtonsUI(1);
 
   const socket = new SockJS("/ws");

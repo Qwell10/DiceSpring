@@ -2,18 +2,16 @@ package com.dice.controller;
 
 import com.dice.dto.*;
 import com.dice.service.GameService;
+import com.dice.service.RoomsManager;
 import com.dice.service.ScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
-/*
 @RestController
 @RequestMapping("/api/dice")
 public class DiceController {
@@ -25,98 +23,73 @@ public class DiceController {
     private GameService gameService;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private RoomsManager roomsManager;
 
-    @MessageMapping("/game.select-die")
-    @SendTo("/topic/dice-selection")
-    public DieSelectDto broadcastDieSelection(DieSelectDto dto) {
-        return dto;
-    }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/{roomCode}/roll")
     public ResponseEntity<?> rollDice(@PathVariable String roomCode) {
-        List<Integer> rolledDice = gameService.rollDice(gameService.getActivePlayerRemainingDice(roomCode));
+        int remainingDice = gameService.getActivePlayerRemainingDice(roomCode);
 
-        broadcastGameState(true);
+        List<Integer> rolledDice = gameService.rollDice(roomCode, remainingDice);
+
+        broadcastGameState(roomCode, true);
 
         if (scoringService.isRollScorable(rolledDice)) {
             return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
         } else {
             gameService.setActivePlayerRemainingDiceToSix(roomCode);
             gameService.setActivePlayerTurnScoreToZero(roomCode);
-
-            broadcastGameState(false);
-
+            broadcastGameState(roomCode, false);
             return ResponseEntity.ok().body(new RollResponse(rolledDice, true, "Bust! Nic nepadlo. Hraje druhý hráč."));
         }
     }
+/*
 
-    @PostMapping("/score")
-    public ResponseEntity<?> calculateScore(@RequestBody List<Integer> pickedDice) {
-        if (scoringService.isLargeStraight(pickedDice)) {
-            gameService.saveTurnScore(3000);
-            gameService.setCurrentDiceOnTableToZero();
+    @MessageMapping("/game.select-die")
+    public void broadcastDieSelection(DieSelectDto dto) {
+        // Odesílá se přímo do konkrétní místnosti
+        messagingTemplate.convertAndSend("/topic/dice-selection/" + dto.getRoomCode(), dto);
+    }
 
-            broadcastGameState(false);
-
-            return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
-        }
-
-        if (scoringService.isSmallStraight(pickedDice)) {
-            if (scoringService.containsOnes(pickedDice)) {
-                gameService.saveTurnScore(1600);
-                gameService.setCurrentDiceOnTableToZero();
-
-                broadcastGameState(false);
-
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
-            } else if (scoringService.containsFives(pickedDice)) {
-                gameService.saveTurnScore(1550);
-                gameService.setCurrentDiceOnTableToZero();
-
-                broadcastGameState(false);
-
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), Collections.emptyList(), null));
-            } else {
-                gameService.saveTurnScore(1500);
-                gameService.removePickedDiceFromTable(pickedDice);
-
-                broadcastGameState(false);
-
-                return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), gameService.getCurrentDiceOnTable(), null));
-            }
-        }
-
+    @PostMapping("/{roomCode}/score")
+    public ResponseEntity<?> calculateScore(@PathVariable String roomCode, @RequestBody List<Integer> pickedDice) {
         if (scoringService.hasInvalidDice(pickedDice)) {
             return ResponseEntity.badRequest().body(new ErrorResponse("Neplatné kostky!"));
         }
 
         int turnScore = scoringService.calculateScore(pickedDice);
-        gameService.saveTurnScore(turnScore);
-        gameService.setActivePlayerRemainingDice(pickedDice);
-        gameService.removePickedDiceFromTable(pickedDice);
+        gameService.saveTurnScore(roomCode, turnScore);
+        gameService.setActivePlayerRemainingDice(roomCode, pickedDice);
+        gameService.removePickedDiceFromTable(roomCode, pickedDice);
 
-        broadcastGameState(false);
+        broadcastGameState(roomCode, false);
 
-        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(), gameService.getCurrentDiceOnTable(), null));
+        List<Integer> diceOnTable = roomsManager.getRoomState(roomCode).getCurrentDiceOnTable();
+        return ResponseEntity.ok().body(new TurnStatusResponse(gameService.getTurnScore(roomCode), diceOnTable, null));
     }
 
-    @PostMapping("/endTurn")
-    public ResponseEntity<?> endTurn() {
-        int totalScore = gameService.endTurn();
+    @PostMapping("/{roomCode}/endTurn")
+    public ResponseEntity<?> endTurn(@PathVariable String roomCode) {
+        int totalScore = gameService.endTurn(roomCode);
 
-        gameService.setActivePlayerRemainingDiceToSix();
-        gameService.setCurrentDiceOnTableToZero();
+        gameService.setActivePlayerRemainingDiceToSix(roomCode);
+        gameService.setCurrentDiceOnTableToZero(roomCode);
 
-        broadcastGameState(false);
+        broadcastGameState(roomCode, false);
 
         if (totalScore >= 5000) {
             return ResponseEntity.ok().body(new EndTurnResponse(totalScore, true, "Výhra!"));
-        } else return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
+        } else {
+            return ResponseEntity.ok().body(new EndTurnResponse(totalScore, false, null));
+        }
     }
+*/
 
-    private void broadcastGameState(boolean isNewRoll) {
-        GameState gameState = gameService.createGameStateSnapshot(isNewRoll);
-        messagingTemplate.convertAndSend("/topic/game-state", gameState);
+    private void broadcastGameState(String roomCode, boolean isNewRoll) {
+        GameState gameState = roomsManager.getRoomState(roomCode);
+        gameState.setNewRoll(isNewRoll);
+        messagingTemplate.convertAndSend("/topic/game-state/" + roomCode, gameState);
     }
-}*/
+}

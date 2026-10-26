@@ -4,16 +4,10 @@ import { updatePlayerStatusUI } from './ui.js';
 
 export async function createRoomAction() {
     try {
-        console.log("Odesílám žádost o založení místnosti...");
-
-        const response = await fetch("/api/dice/create-room", {
-            method: "POST"
-        });
-
+        const response = await fetch("/api/dice/create-room", { method: "POST" });
         if (!response.ok) throw new Error("Nepodařilo se vytvořit místnost");
 
         const data = await response.json();
-
         state.myPlayerId = data.playerId;
         state.currentRoomCode = data.roomCode;
         state.myRole = "Hráč 1";
@@ -21,16 +15,12 @@ export async function createRoomAction() {
         sessionStorage.setItem("playerId", state.myPlayerId);
         sessionStorage.setItem("roomCode", state.currentRoomCode);
 
-        console.log(`Místnost vytvořena! Kód stolu: ${state.currentRoomCode}, Moje ID: ${state.myPlayerId}`);
-
         document.getElementById("display-room-code").innerText = state.currentRoomCode;
         document.getElementById("lobby-screen").style.display = "none";
         document.getElementById("game-screen").style.display = "flex";
 
         updatePlayerStatusUI(true, false);
-
         connect();
-
     } catch (error) {
         console.error("Chyba při vytváření místnosti:", error);
     }
@@ -38,7 +28,6 @@ export async function createRoomAction() {
 
 export async function joinRoomAction() {
     const inputCode = document.getElementById("room-code-input").value.trim().toUpperCase();
-
     if (inputCode === "") {
         alert("Zadej kód místnosti!");
         return;
@@ -59,7 +48,6 @@ export async function joinRoomAction() {
         }
 
         const data = await response.json();
-
         state.myPlayerId = data.playerId;
         state.currentRoomCode = data.roomCode;
         state.myRole = "Hráč 2";
@@ -71,10 +59,7 @@ export async function joinRoomAction() {
         document.getElementById("lobby-screen").style.display = "none";
         document.getElementById("game-screen").style.display = "flex";
 
-        console.log(`Úspěšně připojeno! Kód stolu: ${state.currentRoomCode}, Moje ID: ${state.myPlayerId}`);
-
         connect();
-
     } catch (error) {
         console.error("Kritická chyba při připojování:", error);
     }

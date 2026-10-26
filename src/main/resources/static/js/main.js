@@ -23,23 +23,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 connect();
             } else {
-                console.warn("❌ Backend návrat zamítl. Mažu paměť.");
                 sessionStorage.removeItem("roomCode");
                 sessionStorage.removeItem("playerId");
             }
         } catch (error) {
             console.error("❌ Došlo k chybě při volání REST API:", error);
         }
-    } else {
-        console.log("🔄 V paměti nic není, hráč je nový. Zůstávám v lobby.");
     }
 });
 
 window.addEventListener("beforeunload", () => {
     if (state.stompClient !== null) {
         state.stompClient.disconnect(() => {});
-    } else {
-        console.log("🛑 Není aktivní STOMP spojení, nemám co odpojovat.");
     }
 });
 
@@ -51,7 +46,7 @@ rollBtn.addEventListener("click", () => {
     scoreBtn.disabled = true;
     endTurnBtn.disabled = true;
 
-    fetch("/api/dice/roll", { method: "POST" })
+    fetch(`/api/dice/${state.currentRoomCode}/roll`, { method: "POST" })
         .then((response) => response.json())
         .then((data) => {
             renderDice(data.dice, data.isBust, true);
@@ -65,8 +60,8 @@ rollBtn.addEventListener("click", () => {
 
                 setTimeout(() => {
                     diceArea.innerHTML = "";
-                    fetch("/api/dice/endTurn", { method: "POST" })
-                        .catch(error => console.error("Chyba při automatickém ukončení tahu po Bustu:", error));
+                    fetch(`/api/dice/${state.currentRoomCode}/endTurn`, { method: "POST" })
+                        .catch(error => console.error("Chyba při ukončení po Bustu:", error));
                 }, 3600);
             }
         })
@@ -85,19 +80,16 @@ scoreBtn.addEventListener("click", () => {
         selectedDice.push(parseInt(die.innerText));
     });
 
-    console.log("Selected dice to send:", selectedDice);
     scoreBtn.disabled = true;
 
-    fetch("/api/dice/score", {
+    fetch(`/api/dice/${state.currentRoomCode}/score`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(selectedDice),
     })
         .then((response) => {
             return response.json().then((data) => {
-                if (!response.ok) {
-                    throw new Error(data.errorMessage || data.message || "Neznámá chyba serveru ???");
-                }
+                if (!response.ok) throw new Error(data.errorMessage || data.message || "Chyba serveru");
                 return data;
             });
         })
@@ -125,16 +117,14 @@ endTurnBtn.addEventListener("click", () => {
     scoreBtn.disabled = true;
     endTurnBtn.disabled = true;
 
-    fetch("/api/dice/endTurn", { method: "POST" })
+    fetch(`/api/dice/${state.currentRoomCode}/endTurn`, { method: "POST" })
         .then((response) => {
             if (!response.ok) throw new Error("Chyba při ukončování tahu.");
             return response.json();
         })
         .then((data) => {
             if (data.isWinner === true) {
-                if (typeof showMessage === "function") {
-                    showMessage("🎉 " + data.message + " 🎉", false);
-                }
+                if (typeof showMessage === "function") showMessage("🎉 " + data.message + " 🎉", false);
                 diceArea.innerHTML = `<h2 class="winner-text">Konec hry! Vítězí Hráč ${state.myPlayerId}</h2>`;
             }
         })

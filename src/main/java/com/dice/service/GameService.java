@@ -2,7 +2,6 @@ package com.dice.service;
 
 import com.dice.dto.GameState;
 import com.dice.dto.Player;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,117 +18,83 @@ public class GameService {
     @Autowired
     private RoomsManager roomsManager;
 
-
-    @Getter
-    private final List<Integer> currentDiceOnTable = new ArrayList<>();
-
-
-    public List<Integer> rollDice(int amountDice) {
+    public List<Integer> rollDice(String roomCode, int remainingDice) {
+        GameState room = roomsManager.getRoomState(roomCode);
         Random random = new Random();
-        ArrayList<Integer> diceNumbers = new ArrayList<>();
+        List<Integer> diceNumbers = new ArrayList<>();
 
-        for (int i = 1; i <= amountDice; i++) {
-            int number = random.nextInt(6) + 1;
-            diceNumbers.add(number);
+        for (int i = 1; i <= remainingDice; i++) {
+            diceNumbers.add(random.nextInt(6) + 1);
         }
 
-        currentDiceOnTable.clear();
-        currentDiceOnTable.addAll(diceNumbers);
-
+        room.getDiceOnTable().clear();
+        room.getDiceOnTable().addAll(diceNumbers);
         return diceNumbers;
     }
 
-    public void setCurrentDiceOnTableToZero() {
-        currentDiceOnTable.clear();
+    public void setCurrentDiceOnTableToZero(String roomCode) {
+        roomsManager.getRoomState(roomCode).getDiceOnTable().clear();
     }
 
-    public void removePickedDiceFromTable(List<Integer> pickedDice) {
-        for (Integer die : pickedDice) {
-            currentDiceOnTable.remove(die);
-        }
-    }
-
-    public void switchPlayer(String roomCode) {
+    public void removePickedDiceFromTable(String roomCode, List<Integer> pickedDice) {
         GameState room = roomsManager.getRoomState(roomCode);
-
-        Player p1 = room.getPlayer1();
-        Player p2 = room.getPlayer2();
-
-        if (room.isPlayer1Connected()) {
-            room.setActivePlayerId(p2.getId());
-        } else room.setActivePlayerId(p1.getId());
+        for (Integer die : pickedDice) {
+            room.getDiceOnTable().remove(die);
+        }
     }
 
     public int getActivePlayerRemainingDice(String roomCode) {
-        GameState room = roomsManager.getRoomState(roomCode);
-
-        Player activePlayer = room.getActivePlayer();
-
-        if (activePlayer == null) {
-            throw new IllegalStateException("Chyba: Aktivní hráč nebyl u stolu nalezen!");
-        }
-
-        return activePlayer.getRemainingDice();
+        return roomsManager.getRoomState(roomCode).getActivePlayer().getRemainingDice();
     }
 
-
     public void setActivePlayerRemainingDiceToSix(String roomCode) {
-        GameState room = roomsManager.getRoomState(roomCode);
-        Player activePlayer = room.getActivePlayer();
-
-        activePlayer.setRemainingDice(6);
+        roomsManager.getRoomState(roomCode).getActivePlayer().setRemainingDice(6);
     }
 
     public void setActivePlayerTurnScoreToZero(String roomCode) {
-        GameState room = roomsManager.getRoomState(roomCode);
-        Player activePlayer = room.getActivePlayer();
+        roomsManager.getRoomState(roomCode).getActivePlayer().setTurnScore(0);
+    }
 
-        activePlayer.setTurnScore(0);
+    public void setActivePlayerRemainingDice(String roomCode, List<Integer> pickedDice) {
+        Player activePlayer = roomsManager.getRoomState(roomCode).getActivePlayer();
+        activePlayer.setRemainingDice(activePlayer.getRemainingDice() - pickedDice.size());
+    }
+
+    public void saveTurnScore(String roomCode, int turnScore) {
+        Player activePlayer = roomsManager.getRoomState(roomCode).getActivePlayer();
+        activePlayer.setTurnScore(activePlayer.getTurnScore() + turnScore);
+    }
+
+    public int getTurnScore(String roomCode) {
+        return roomsManager.getRoomState(roomCode).getActivePlayer().getTurnScore();
     }
 
 /*
-    public void setActivePlayerRemainingDice(List<Integer> pickedDice) {
-        if (activePlayerId == 1) {
-            player1.setRemainingDice(player1.getRemainingDice() - pickedDice.size());
-        } else player2.setRemainingDice(player2.getRemainingDice() - pickedDice.size());
-    }
+    public int endTurn(String roomCode) {
+        GameState room = roomsManager.getRoomState(roomCode);
+        Player activePlayer = room.getActivePlayer();
 
-    public void saveTurnScore(int turnScore) {
-        if (activePlayerId == 1) {
-            player1.setTurnScore(player1.getTurnScore() + turnScore);
-        } else player2.setTurnScore(player2.getTurnScore() + turnScore);
-    }
+        activePlayer.setTotalScore(activePlayer.getTotalScore() + activePlayer.getTurnScore());
+        activePlayer.setTurnScore(0);
+        activePlayer.setRemainingDice(6);
 
-    public int getTurnScore() {
-        if (activePlayerId == 1) {
-            return player1.getTurnScore();
-        } else return player2.getTurnScore();
-    }
-
-    public int endTurn() {
-        int totalScore;
-
-        if (activePlayerId == 1) {
-            player1.setTotalScore(player1.getTotalScore() + player1.getTurnScore());
-            player1.setTurnScore(0);
-            player1.setRemainingDice(6);
-
-            totalScore = player1.getTotalScore();
-        } else {
-            player2.setTotalScore(player2.getTotalScore() + player2.getTurnScore());
-            player2.setTurnScore(0);
-            player2.setRemainingDice(6);
-
-            totalScore = player2.getTotalScore();
-        }
-
-        switchPlayer();
-
+        int totalScore = activePlayer.getTotalScore();
+        switchPlayer(roomCode);
         return totalScore;
     }
+*/
 
-    public GameState createGameStateSnapshot(boolean isNewRoll) {
-        return new GameState(player1, player2, currentDiceOnTable, isNewRoll, activePlayerId);
+    /*
+    public void switchPlayer(String roomCode) {
+        GameState room = roomsManager.getRoomState(roomCode);
+        Player p1 = room.getPlayer1();
+        Player p2 = room.getPlayer2();
+
+        if (room.getActivePlayerId() == 1) {
+            room.setActivePlayerId(2);
+        } else {
+            room.setActivePlayerId(1);
+        }
     }
 */
 

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,7 @@ public class GameState {
 
     private Player player1;
     private Player player2;
-    private List<Integer> diceOnTable;
+    private List<Integer> diceOnTable = new ArrayList<>();
     private String activePlayerId;
     private boolean isNewRoll;
 

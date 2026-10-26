@@ -60,6 +60,8 @@ export function updatePlayerStatusUI(p1Connected, p2Connected) {
 export function updateButtonsUI(activePlayerId) {
     if (state.myPlayerId === activePlayerId) {
         rollBtn.disabled = false;
+        scoreBtn.disabled = true;
+        endTurnBtn.disabled = true;
     } else {
         rollBtn.disabled = true;
         scoreBtn.disabled = true;

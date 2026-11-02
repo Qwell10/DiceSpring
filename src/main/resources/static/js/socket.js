@@ -3,7 +3,6 @@ import { updatePlayerStatusUI, updateButtonsUI, setActivePlayerWindow, renderDic
 
 export function connect() {
     console.log("🔌 [Fáze 3: connect()] Funkce connect byla zavolána. Vytvářím SockJS...");
-    updateButtonsUI(1);
 
     const socket = new SockJS("/ws");
     state.stompClient = Stomp.over(socket);
@@ -33,6 +32,7 @@ export function connect() {
                 if (state.currentActivePlayerId !== gameState.activePlayerId) {
                     state.currentActivePlayerId = gameState.activePlayerId;
                     updateButtonsUI(gameState.activePlayerId);
+
                     setActivePlayerWindow(gameState.activePlayerId);
                 }
 

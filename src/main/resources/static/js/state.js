@@ -3,5 +3,5 @@ export const state = {
     currentRoomCode: sessionStorage.getItem("roomCode") || null,
     myRole: "",
     stompClient: null,
-    currentActivePlayerId: 1
+    currentActivePlayerId: null
 };

@@ -42,6 +42,14 @@ document.getElementById("create-room-btn").addEventListener("click", createRoomA
 document.getElementById("join-room-btn").addEventListener("click", joinRoomAction);
 
 rollBtn.addEventListener("click", () => {
+    const isPlayer1Active = document.getElementById("player1-card").classList.contains("active");
+    const activePlayerId = isPlayer1Active ? "1" : "2";
+
+    if (state.myPlayerId !== activePlayerId) {
+        showMessage("Hraje soupeř...", true);
+        return; 
+    }
+
     rollBtn.disabled = true;
     scoreBtn.disabled = true;
     endTurnBtn.disabled = true;

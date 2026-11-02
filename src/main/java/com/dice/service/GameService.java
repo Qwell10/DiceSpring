@@ -32,6 +32,14 @@ public class GameService {
         return diceNumbers;
     }
 
+    //todo
+    public boolean isPlayerTurn(String roomCode, String playerId) {
+        //toto je spatne a navic mel bych kontrolovat room!=null
+        //stejne tak nahore v RollDice
+        //vice pochopit vyhazovani vyjimek a jejich zachytavani a na jake urovni!!!
+        return roomsManager.getRoomState(roomCode).getPlayer1().getId().equals(playerId);
+    }
+
     public void setCurrentDiceOnTableToZero(String roomCode) {
         roomsManager.getRoomState(roomCode).getDiceOnTable().clear();
     }

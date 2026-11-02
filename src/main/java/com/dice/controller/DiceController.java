@@ -28,8 +28,14 @@ public class DiceController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @PostMapping("/{roomCode}/roll")
-    public ResponseEntity<?> rollDice(@PathVariable String roomCode) {
+    @PostMapping("/{roomCode}/player/{playerId}/roll")
+    public ResponseEntity<?> rollDice(@PathVariable String roomCode, @PathVariable String playerId) {
+        // 1. Zde ověříš, zda se 'playerId' shoduje s hráčem, který je aktuálně na tahu.
+          // -> gameService.isPlayerTurn.....
+
+        // 2. Pokud ne, vrátíš chybu (např. 403 Forbidden).
+
+
         int remainingDice = gameService.getActivePlayerRemainingDice(roomCode);
 
         List<Integer> rolledDice = gameService.rollDice(roomCode, remainingDice);

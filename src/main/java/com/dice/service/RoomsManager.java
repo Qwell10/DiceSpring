@@ -29,7 +29,6 @@ public class RoomsManager {
         return roomCode;
     }
 
-    //todo - neni 100%, potreba doladit -- UUID je ulozene do sessionStorage na FE
     public String joinRoom(String roomCode, String playerId) {
         GameState room = getRoomState(roomCode);
 

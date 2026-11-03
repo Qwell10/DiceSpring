@@ -31,6 +31,7 @@ public class DiceController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    //todo zachyceni vyjimky IllegalArgumentException
     @PostMapping("/{roomCode}/player/{playerId}/roll")
     public ResponseEntity<?> rollDice(@PathVariable String roomCode, @PathVariable String playerId) {
         // 1. Zde ověříš, zda se 'playerId' shoduje s hráčem, který je aktuálně na tahu.

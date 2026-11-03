@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class GameService {
@@ -20,11 +20,16 @@ public class GameService {
 
     public List<Integer> rollDice(String roomCode, int remainingDice) {
         GameState room = roomsManager.getRoomState(roomCode);
-        Random random = new Random();
+
+        if (room == null) {
+            throw new IllegalArgumentException("Místnost s tímto kódem neexistuje.");
+        }
+
         List<Integer> diceNumbers = new ArrayList<>();
 
         for (int i = 1; i <= remainingDice; i++) {
-            diceNumbers.add(random.nextInt(6) + 1);
+            //ThreadLocalRandom - nevytvari stale novy objekt pri kazdem hode oproti tride Random, neblokuji se vlakna a uspora pameti
+            diceNumbers.add(ThreadLocalRandom.current().nextInt(1, 7));
         }
 
         room.getDiceOnTable().clear();

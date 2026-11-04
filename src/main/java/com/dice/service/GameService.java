@@ -18,15 +18,11 @@ public class GameService {
     @Autowired
     private RoomsManager roomsManager;
 
-    public List<Integer> rollDice(String roomCode, int remainingDice) {
-        GameState room = roomsManager.getRoomState(roomCode);
-
-        if (room == null) {
-            throw new IllegalArgumentException("Místnost s tímto kódem neexistuje.");
-        }
+    public List<Integer> rollDice(String roomCode) {
+        GameState room = getRoomOrThrow(roomCode);
+        int remainingDice = room.getActivePlayer().getRemainingDice();
 
         List<Integer> diceNumbers = new ArrayList<>();
-
         for (int i = 1; i <= remainingDice; i++) {
             //ThreadLocalRandom - nevytvari stale novy objekt pri kazdem hode oproti tride Random, neblokuji se vlakna a uspora pameti
             diceNumbers.add(ThreadLocalRandom.current().nextInt(1, 7));
@@ -45,6 +41,15 @@ public class GameService {
         return roomsManager.getRoomState(roomCode).getPlayer1().getId().equals(playerId);
     }
 
+    public void setActivePlayerRemainingDiceToSix(String roomCode) {
+        roomsManager.getRoomState(roomCode).getActivePlayer().setRemainingDice(6);
+    }
+
+    public void setActivePlayerTurnScoreToZero(String roomCode) {
+        roomsManager.getRoomState(roomCode).getActivePlayer().setTurnScore(0);
+    }
+
+/*
     public void setCurrentDiceOnTableToZero(String roomCode) {
         roomsManager.getRoomState(roomCode).getDiceOnTable().clear();
     }
@@ -54,18 +59,6 @@ public class GameService {
         for (Integer die : pickedDice) {
             room.getDiceOnTable().remove(die);
         }
-    }
-
-    public int getActivePlayerRemainingDice(String roomCode) {
-        return roomsManager.getRoomState(roomCode).getActivePlayer().getRemainingDice();
-    }
-
-    public void setActivePlayerRemainingDiceToSix(String roomCode) {
-        roomsManager.getRoomState(roomCode).getActivePlayer().setRemainingDice(6);
-    }
-
-    public void setActivePlayerTurnScoreToZero(String roomCode) {
-        roomsManager.getRoomState(roomCode).getActivePlayer().setTurnScore(0);
     }
 
     public void setActivePlayerRemainingDice(String roomCode, List<Integer> pickedDice) {
@@ -82,7 +75,7 @@ public class GameService {
         return roomsManager.getRoomState(roomCode).getActivePlayer().getTurnScore();
     }
 
-/*
+
     public int endTurn(String roomCode) {
         GameState room = roomsManager.getRoomState(roomCode);
         Player activePlayer = room.getActivePlayer();
@@ -111,4 +104,10 @@ public class GameService {
     }
 */
 
+    private GameState getRoomOrThrow(String roomCode) {
+        GameState room = roomsManager.getRoomState(roomCode);
+        if (room == null) {
+            throw new IllegalArgumentException("Místnost neexistuje");
+        } else return room;
+    }
 }

@@ -31,28 +31,28 @@ public class DiceController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    //todo zachyceni vyjimky IllegalArgumentException
     @PostMapping("/{roomCode}/player/{playerId}/roll")
     public ResponseEntity<?> rollDice(@PathVariable String roomCode, @PathVariable String playerId) {
         // 1. Zde ověříš, zda se 'playerId' shoduje s hráčem, který je aktuálně na tahu.
-          // -> gameService.isPlayerTurn.....
+        // -> gameService.isPlayerTurn.....
 
         // 2. Pokud ne, vrátíš chybu (např. 403 Forbidden).
 
+        try {
+            List<Integer> rolledDice = gameService.rollDice(roomCode);
 
-        int remainingDice = gameService.getActivePlayerRemainingDice(roomCode);
+            broadcastGameState(roomCode, true);
 
-        List<Integer> rolledDice = gameService.rollDice(roomCode, remainingDice);
-
-        broadcastGameState(roomCode, true);
-
-        if (scoringService.isRollScorable(rolledDice)) {
-            return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
-        } else {
-            gameService.setActivePlayerRemainingDiceToSix(roomCode);
-            gameService.setActivePlayerTurnScoreToZero(roomCode);
-            broadcastGameState(roomCode, false);
-            return ResponseEntity.ok().body(new RollResponse(rolledDice, true, "Bust! Nic nepadlo. Hraje druhý hráč."));
+            if (scoringService.isRollScorable(rolledDice)) {
+                return ResponseEntity.ok().body(new RollResponse(rolledDice, false, null));
+            } else {
+                gameService.setActivePlayerRemainingDiceToSix(roomCode);
+                gameService.setActivePlayerTurnScoreToZero(roomCode);
+                broadcastGameState(roomCode, false);
+                return ResponseEntity.ok().body(new RollResponse(rolledDice, true, "Bust! Nic nepadlo. Hraje druhý hráč."));
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 /*

@@ -6,6 +6,7 @@ import com.dice.service.GameService;
 import com.dice.service.RoomsManager;
 import com.dice.service.ScoringService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,15 +32,11 @@ public class DiceController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    //todo - viz rollDice()
     @PostMapping("/{roomCode}/player/{playerId}/roll")
     public ResponseEntity<?> rollDice(@PathVariable String roomCode, @PathVariable String playerId) {
-        // 1. Zde ověříš, zda se 'playerId' shoduje s hráčem, který je aktuálně na tahu.
-        // -> gameService.isPlayerTurn.....
-
-        // 2. Pokud ne, vrátíš chybu (např. 403 Forbidden).
-
         try {
-            List<Integer> rolledDice = gameService.rollDice(roomCode);
+            List<Integer> rolledDice = gameService.rollDice(roomCode, playerId);
 
             broadcastGameState(roomCode, true);
 
@@ -48,11 +45,15 @@ public class DiceController {
             } else {
                 gameService.setActivePlayerRemainingDiceToSix(roomCode);
                 gameService.setActivePlayerTurnScoreToZero(roomCode);
+
                 broadcastGameState(roomCode, false);
+
                 return ResponseEntity.ok().body(new RollResponse(rolledDice, true, "Bust! Nic nepadlo. Hraje druhý hráč."));
             }
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 /*

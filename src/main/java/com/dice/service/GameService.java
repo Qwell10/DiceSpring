@@ -18,8 +18,11 @@ public class GameService {
     @Autowired
     private RoomsManager roomsManager;
 
-    public List<Integer> rollDice(String roomCode) {
+    //todo
+    public List<Integer> rollDice(String roomCode, String playerId) {
         GameState room = getRoomOrThrow(roomCode);
+        verifyPlayerTurnOrThrow(room, playerId);
+
         int remainingDice = room.getActivePlayer().getRemainingDice();
 
         List<Integer> diceNumbers = new ArrayList<>();
@@ -34,17 +37,11 @@ public class GameService {
     }
 
     //todo
-    public boolean isPlayerTurn(String roomCode, String playerId) {
-        //toto je spatne a navic mel bych kontrolovat room!=null
-        //stejne tak nahore v RollDice
-        //vice pochopit vyhazovani vyjimek a jejich zachytavani a na jake urovni!!!
-        return roomsManager.getRoomState(roomCode).getPlayer1().getId().equals(playerId);
-    }
-
     public void setActivePlayerRemainingDiceToSix(String roomCode) {
         roomsManager.getRoomState(roomCode).getActivePlayer().setRemainingDice(6);
     }
 
+    //todo
     public void setActivePlayerTurnScoreToZero(String roomCode) {
         roomsManager.getRoomState(roomCode).getActivePlayer().setTurnScore(0);
     }
@@ -109,5 +106,11 @@ public class GameService {
         if (room == null) {
             throw new IllegalArgumentException("Místnost neexistuje");
         } else return room;
+    }
+
+    private void verifyPlayerTurnOrThrow(GameState room, String playerId) {
+        if (!room.getActivePlayer().getId().equals(playerId)) {
+            throw new IllegalStateException("Není tvůj tah!");
+        }
     }
 }

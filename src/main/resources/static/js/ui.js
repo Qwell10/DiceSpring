@@ -6,15 +6,16 @@ export const rollBtn = document.getElementById("rollBtn");
 export const scoreBtn = document.getElementById("scoreBtn");
 export const endTurnBtn = document.getElementById("endTurnBtn");
 
-//todo - oprava pro UUID
-export function setActivePlayerWindow(activeId) {
+export function setActivePlayerWindow(gameState) {
+    if (!gameState.player1 || !gameState.player2) return; 
+
     const p1Card = document.getElementById("player1-card");
     const p2Card = document.getElementById("player2-card");
 
-    if (activeId === 1) {
-        p1Card.classList.add("active")
+    if (gameState.activePlayerId === gameState.player1.id) {
+        p1Card.classList.add("active");
         p2Card.classList.remove("active");
-    } else {
+    } else if (gameState.activePlayerId === gameState.player2.id) {
         p1Card.classList.remove("active");
         p2Card.classList.add("active");
     }

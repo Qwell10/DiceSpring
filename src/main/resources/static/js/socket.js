@@ -33,7 +33,7 @@ export function connect() {
                     state.currentActivePlayerId = gameState.activePlayerId;
                     updateButtonsUI(gameState.activePlayerId);
 
-                    setActivePlayerWindow(gameState.activePlayerId);
+                    setActivePlayerWindow(gameState);
                 }
 
                 if (!gameState.diceOnTable || gameState.diceOnTable.length === 0) {
